@@ -19,9 +19,11 @@ function maskCep(value: string) {
 export function CheckoutForm({
   prefill,
   isLoggedIn,
+  cardEnabled,
 }: {
   prefill: CheckoutPrefill | null;
   isLoggedIn: boolean;
+  cardEnabled: boolean;
 }) {
   const { lines, hydrated } = useCart();
   const [details, setDetails] = useState<CartLineDetails[]>([]);
@@ -313,10 +315,12 @@ export function CheckoutForm({
               <input type="radio" name="paymentMethod" value="pix" defaultChecked />
               Pix — QR Code gerado na hora, confirmação em até 24h
             </label>
-            <label className="flex items-center gap-3 rounded-lg border border-rose/30 p-4 text-sm">
-              <input type="radio" name="paymentMethod" value="cartao" />
-              Cartão de crédito — em até 6x, processado pelo Mercado Pago
-            </label>
+            {cardEnabled && (
+              <label className="flex items-center gap-3 rounded-lg border border-rose/30 p-4 text-sm">
+                <input type="radio" name="paymentMethod" value="cartao" />
+                Cartão de crédito — em até 6x, processado pelo Mercado Pago
+              </label>
+            )}
           </div>
         </section>
       </div>

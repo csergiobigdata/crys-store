@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { getCheckoutPrefill } from "@/lib/auth/checkout-prefill";
 import { getCurrentUser } from "@/lib/auth/session";
+import { isCardPaymentEnabled } from "@/lib/mercadopago/card-enabled";
 
 export const metadata: Metadata = { title: "Checkout" };
 
@@ -34,7 +35,11 @@ export default async function CheckoutPage() {
       </p>
 
       <div className="mt-8">
-        <CheckoutForm prefill={prefill} isLoggedIn={Boolean(user)} />
+        <CheckoutForm
+          prefill={prefill}
+          isLoggedIn={Boolean(user)}
+          cardEnabled={isCardPaymentEnabled()}
+        />
       </div>
     </div>
   );

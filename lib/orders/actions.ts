@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { notifyAdminNewPixOrder } from "@/lib/email/notify-admin";
 import { sendOrderCreatedEmail } from "@/lib/email/notify-customer";
+import { isCardPaymentEnabled } from "@/lib/mercadopago/card-enabled";
 import { type CepAddress, lookupCepAddress } from "@/lib/orders/cep-lookup";
 import { getShippingOptions, type ShippingOption } from "@/lib/orders/shipping";
 import { createPixPaymentForOrder } from "@/lib/pix/create-payment";
@@ -113,6 +114,9 @@ export async function createOrder(
   }
 
   const data = parsed.data;
+  if (data.paymentMethod === "cartao" && !isCardPaymentEnabled()) {
+    return { error: "Pagamento por cartão indisponível no momento. Escolha Pix." };
+  }
   const user = await getCurrentUser();
   const [cityLookup, pixExpirationHours] = await Promise.all([
     lookupCepAddress(data.cep),
