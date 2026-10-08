@@ -1,5 +1,6 @@
 import "server-only";
 import { getPixEnv } from "@/lib/pix/env";
+import { normalizePixKey } from "@/lib/pix/key";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type PixConfig = {
@@ -37,8 +38,10 @@ export async function getPixConfig(): Promise<PixConfig> {
   }
 
   const env = getPixEnv();
+  // A chave do .env pode vir como o cliente digita (ex. "11 98649-3333");
+  // o BR Code exige o formato normalizado (ex. "+5511986493333").
   return {
-    pixKey: env.PIX_KEY,
+    pixKey: normalizePixKey(env.PIX_KEY)?.key ?? env.PIX_KEY,
     merchantName: env.PIX_MERCHANT_NAME,
     merchantCity: env.PIX_MERCHANT_CITY,
   };
