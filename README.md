@@ -153,6 +153,19 @@ Também implementados:
 O limite de parcelas exibido no Payment Brick vem de `app_settings.mp_max_installments`
 (editável sem redeploy), com `MP_MAX_INSTALLMENTS` como padrão.
 
+## Pix automático (Mercado Pago)
+
+Com `MP_ACCESS_TOKEN` configurado, cada pedido Pix é criado como pagamento
+`pix` na API do Mercado Pago (QR único, vencimento igual ao do pedido). O
+mesmo webhook do cartão confirma o pagamento (`confirm_pix_payment_by_mp`,
+migração `0020`), marca o pedido como pago e envia o e-mail ao cliente — sem
+comprovante e sem ação do admin. Exige **chave Pix cadastrada na conta
+Mercado Pago**. Se o Mercado Pago não estiver configurado ou falhar na
+criação, o checkout cai automaticamente no Pix estático (chave própria,
+comprovante e confirmação manual em `/admin/pedidos`). Se um Pix for pago
+depois de o pedido expirar, o histórico do pedido recebe um aviso "ATENÇÃO"
+para reembolso/reativação manual.
+
 ## Expiração automática de pedidos
 
 Pedidos Pix vencidos (prazo em `PIX_EXPIRATION_HOURS`) e pedidos de cartão

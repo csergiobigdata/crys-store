@@ -31,6 +31,8 @@ export type OrderWithDetails = {
     payload_emv: string;
     review_status: "aguardando" | "em_analise" | "confirmado" | "recusado";
     proof_file_path: string | null;
+    /** Preenchido quando o Pix foi criado no Mercado Pago (confirmação automática). */
+    mp_payment_id: string | null;
   } | null;
 };
 

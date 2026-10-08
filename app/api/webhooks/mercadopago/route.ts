@@ -1,4 +1,7 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { getOrderContactEmail } from "@/lib/admin/order-contact";
+import { sendPaymentConfirmedEmail } from "@/lib/email/notify-customer";
 import { createPaymentClient } from "@/lib/mercadopago/client";
 import { verifyWebhookSignature } from "@/lib/mercadopago/verify-webhook-signature";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -47,6 +50,30 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminClient();
+
+  // Pix criado pela API: confirma o pedido (idempotente) e avisa o cliente.
+  if (payment.payment_method_id === "pix") {
+    const { data: result } = await supabase.rpc("confirm_pix_payment_by_mp", {
+      p_order_id: orderId,
+      p_mp_payment_id: String(payment.id),
+      p_status: payment.status ?? "pending",
+    });
+    if (result === "pago") {
+      const contact = await getOrderContactEmail(orderId);
+      if (contact?.email) {
+        await sendPaymentConfirmedEmail({
+          to: contact.email,
+          orderNumber: contact.orderNumber,
+          accessToken: contact.accessToken,
+        });
+      }
+      if (contact) revalidatePath(`/pedidos/${contact.orderNumber}`);
+    } else if (result === "late_payment") {
+      console.error(`Pix ${payment.id} aprovado após o pedido ${orderId} expirar — ação manual necessária.`);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   await supabase.rpc("record_mercadopago_payment_result", {
     p_order_id: orderId,
     p_mp_payment_id: payment.id ? String(payment.id) : null,

@@ -183,6 +183,10 @@ export async function createOrder(
       orderId: order.order_id,
       orderNumber: order.order_number,
       total,
+      payerEmail: data.email,
+      payerName: data.fullName,
+      payerCpf: data.cpf,
+      expiresAt: new Date(Date.now() + pixExpirationHours * 36e5),
     });
     await notifyAdminNewPixOrder({
       orderNumber: order.order_number,

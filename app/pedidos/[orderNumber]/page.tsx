@@ -150,6 +150,7 @@ export default async function OrderPage({
                 : ""
             }
             reviewStatus={order.pix_payment!.review_status}
+            automatic={Boolean(order.pix_payment!.mp_payment_id)}
           />
         ) : order.payment_method === "pix" && order.status === "pago" ? (
           <p className="mt-2 text-sm text-success">

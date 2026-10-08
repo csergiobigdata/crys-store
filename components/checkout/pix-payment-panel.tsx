@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { uploadPixProof } from "@/lib/pix/upload-proof";
 
@@ -12,6 +13,7 @@ export function PixPaymentPanel({
   totalFormatted,
   expiresAtFormatted,
   reviewStatus,
+  automatic,
 }: {
   orderNumber: string;
   token: string;
@@ -20,9 +22,19 @@ export function PixPaymentPanel({
   totalFormatted: string;
   expiresAtFormatted: string;
   reviewStatus: "aguardando" | "em_analise" | "confirmado" | "recusado";
+  /** Pix do Mercado Pago: confirmado sozinho, sem comprovante. */
+  automatic: boolean;
 }) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [state, formAction, pending] = useActionState(uploadPixProof, undefined);
+
+  // Pix automático: consulta o pedido a cada 5 s até o webhook confirmar o pagamento.
+  useEffect(() => {
+    if (!automatic) return;
+    const interval = setInterval(() => router.refresh(), 5000);
+    return () => clearInterval(interval);
+  }, [automatic, router]);
 
   async function handleCopy() {
     try {
@@ -49,47 +61,57 @@ export function PixPaymentPanel({
         </Button>
       </div>
 
-      <p className="mt-4 text-sm text-plum-soft">
-        Após pagar, envie o comprovante abaixo. A confirmação é feita pela
-        equipe da Chrys Store.
-      </p>
-
-      {reviewStatus === "em_analise" && (
-        <p className="mt-2 rounded-lg bg-rose-light/40 px-3 py-2 text-sm text-plum">
-          Comprovante recebido e em análise. Você pode enviar outro arquivo se
-          precisar corrigir.
+      {automatic ? (
+        <p className="mt-4 rounded-lg bg-rose-light/40 px-3 py-2 text-sm text-plum" role="status">
+          Pague pelo app do seu banco (Pix copia e cola ou QR Code). A confirmação é
+          automática: esta página atualiza sozinha em instantes e você recebe um e-mail.
+          Não é preciso enviar comprovante.
         </p>
-      )}
-      {reviewStatus === "recusado" && (
-        <p className="mt-2 rounded-lg bg-error-light px-3 py-2 text-sm text-error">
-          O comprovante enviado não foi aceito. Envie um novo comprovante.
+      ) : (
+        <>
+        <p className="mt-4 text-sm text-plum-soft">
+          Após pagar, envie o comprovante abaixo. A confirmação é feita pela
+          equipe da Chrys Store.
         </p>
-      )}
 
-      <form action={formAction} className="mt-4 space-y-3">
-        <input type="hidden" name="orderNumber" value={orderNumber} />
-        <input type="hidden" name="token" value={token} />
-        <input
-          type="file"
-          name="file"
-          accept="image/jpeg,image/png,image/webp,application/pdf"
-          required
-          className="block w-full text-sm text-plum-soft"
-        />
-        {state?.error && (
-          <p className="rounded-lg bg-error-light px-3 py-2 text-sm text-error" role="alert">
-            {state.error}
+        {reviewStatus === "em_analise" && (
+          <p className="mt-2 rounded-lg bg-rose-light/40 px-3 py-2 text-sm text-plum">
+            Comprovante recebido e em análise. Você pode enviar outro arquivo se
+            precisar corrigir.
           </p>
         )}
-        {state?.success && (
-          <p className="rounded-lg bg-success-light px-3 py-2 text-sm text-success" role="status">
-            Comprovante enviado com sucesso!
+        {reviewStatus === "recusado" && (
+          <p className="mt-2 rounded-lg bg-error-light px-3 py-2 text-sm text-error">
+            O comprovante enviado não foi aceito. Envie um novo comprovante.
           </p>
         )}
-        <Button type="submit" disabled={pending}>
-          {pending ? "Enviando..." : "Enviar comprovante"}
-        </Button>
-      </form>
+
+        <form action={formAction} className="mt-4 space-y-3">
+          <input type="hidden" name="orderNumber" value={orderNumber} />
+          <input type="hidden" name="token" value={token} />
+          <input
+            type="file"
+            name="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            required
+            className="block w-full text-sm text-plum-soft"
+          />
+          {state?.error && (
+            <p className="rounded-lg bg-error-light px-3 py-2 text-sm text-error" role="alert">
+              {state.error}
+            </p>
+          )}
+          {state?.success && (
+            <p className="rounded-lg bg-success-light px-3 py-2 text-sm text-success" role="status">
+              Comprovante enviado com sucesso!
+            </p>
+          )}
+          <Button type="submit" disabled={pending}>
+            {pending ? "Enviando..." : "Enviar comprovante"}
+          </Button>
+        </form>
+        </>
+      )}
     </div>
   );
 }
