@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/*
+ * Paleta Chrys Store (docs/arquitetura.md, seção 3).
+ * Rosa predominante (marca feminina) com azul-bebê como cor de apoio.
+ * A loja usa sempre o tema claro — a marca não varia com o esquema do
+ * sistema, então não há bloco @media (prefers-color-scheme: dark) aqui.
+ */
+:root {
+  --color-plum: #3d1a2e;
+  --color-plum-soft: #7a5568;
+
+  --color-rose: #ec4f8c;
+  --color-rose-dark: #c22a6b;
+  --color-rose-light: #fcd3e4;
+
+  --color-sky: #7cc4f0;
+  --color-sky-dark: #2b7fb8;
+  --color-sky-light: #dff1fc;
+
+  --color-blush: #fff3f8;
+  --color-surface: #ffffff;
+
+  --color-success: #2e7d5b;
+  --color-success-light: #e3f1ea;
+
+  --color-error: #b3261e;
+  --color-error-light: #fbeae8;
+
+  --color-background: var(--color-blush);
+  --color-foreground: var(--color-plum);
+
+  --shadow-card: 0 1px 2px rgba(194, 42, 107, 0.06), 0 8px 24px rgba(194, 42, 107, 0.1);
+  --shadow-card-hover: 0 4px 10px rgba(194, 42, 107, 0.1), 0 16px 40px rgba(194, 42, 107, 0.18);
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+
+  --color-plum: var(--color-plum);
+  --color-plum-soft: var(--color-plum-soft);
+  --color-rose: var(--color-rose);
+  --color-rose-dark: var(--color-rose-dark);
+  --color-rose-light: var(--color-rose-light);
+  --color-sky: var(--color-sky);
+  --color-sky-dark: var(--color-sky-dark);
+  --color-sky-light: var(--color-sky-light);
+  --color-blush: var(--color-blush);
+  --color-surface: var(--color-surface);
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
+  --color-error: var(--color-error);
+  --color-error-light: var(--color-error-light);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-playfair);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Seleção de texto e foco visível usam o rosa da marca. */
+::selection {
+  background: var(--color-rose-light);
+  color: var(--color-plum);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rose);
+  outline-offset: 2px;
+}
+
+/* Scrollbar discreta (Chromium/Edge) alinhada à paleta. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-blush);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-rose-light);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-rose);
+}
+
+/* Bolinhas e formas decorativas (inspiradas no layout de referência). */
+.bg-dots {
+  background-image: radial-gradient(var(--color-sky) 1.5px, transparent 1.5px);
+  background-size: 14px 14px;
+}
+
+.bg-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-sky) 0 3px,
+    transparent 3px 9px
+  );
+}
