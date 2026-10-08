@@ -11,5 +11,8 @@ export function getResendClient() {
   return client;
 }
 
-// [REVISAR] domínio real verificado no Resend antes de ir para produção.
-export const EMAIL_FROM = "Chrys Store <pedidos@chrysstore.com.br>";
+// Sem domínio verificado no Resend, o remetente de teste só entrega para o
+// e-mail dono da conta. Com domínio próprio, defina EMAIL_FROM no ambiente,
+// ex.: "Chrys Store <pedidos@seudominio.com.br>" (sem novo deploy de código).
+export const EMAIL_FROM =
+  process.env.EMAIL_FROM?.trim() || "Chrys Store <onboarding@resend.dev>";

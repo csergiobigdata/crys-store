@@ -127,11 +127,10 @@ Também implementados:
 ## Configuração do Resend (e-mails)
 
 1. Crie uma conta gratuita em [resend.com](https://resend.com) e gere uma API key.
-2. Para produção, verifique um domínio próprio no Resend e troque o
-   remetente fixo em `lib/email/resend.ts` (`EMAIL_FROM`, hoje marcado
-   `[REVISAR]`) por um endereço desse domínio. Em desenvolvimento, o Resend
-   permite enviar para o próprio e-mail cadastrado na conta mesmo sem
-   domínio verificado.
+2. Para produção, verifique um domínio próprio no Resend e defina a
+   variável `EMAIL_FROM` (ex.: `Chrys Store <pedidos@seudominio.com.br>`).
+   Sem ela, o remetente é `onboarding@resend.dev`, que o Resend só entrega
+   para o e-mail dono da conta — serve para desenvolvimento e testes.
 3. Preencha `RESEND_API_KEY` e `ADMIN_NOTIFICATION_EMAIL` no `.env.local`.
 
 ## Configuração do Mercado Pago (sandbox)
@@ -363,8 +362,8 @@ pedia, mas vale registrar):
       testes).
 - [ ] Preencher os dados reais da empresa em `/admin/configuracoes`
       (os textos legais e o rodapé mostram `[REVISAR]` até isso acontecer).
-- [ ] Verificar um domínio no Resend e atualizar `EMAIL_FROM` em
-      `lib/email/resend.ts`.
+- [ ] Verificar um domínio no Resend e definir a variável de ambiente
+      `EMAIL_FROM` (ex.: `Chrys Store <pedidos@seudominio.com.br>`).
 - [ ] Trocar as credenciais do Mercado Pago de teste para produção.
 - [ ] Testar um pagamento Pix e um pagamento no cartão de ponta a ponta.
 - [ ] Promover o primeiro usuário admin (ver
