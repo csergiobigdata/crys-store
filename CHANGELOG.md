@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1
+
+- Fale Conosco: além dos administradores, a mensagem vai também para o e-mail de avisos da loja
+  (`ADMIN_NOTIFICATION_EMAIL`), sem repetir endereços.
+
 ## 1.2.0
 
 - Fale Conosco: filtro de palavrões e ofensas na mensagem (aviso na hora, envio bloqueado no

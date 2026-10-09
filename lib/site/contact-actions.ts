@@ -64,7 +64,15 @@ export async function sendContactMessage(
     return { error: "Não foi possível enviar a sua mensagem agora. Tente novamente em instantes." };
   }
 
-  const recipients = await getAllAdminEmails();
+  // Todos os administradores + o e-mail de avisos da loja (ADMIN_NOTIFICATION_EMAIL), sem repetir.
+  const notificationEmail = process.env.ADMIN_NOTIFICATION_EMAIL?.trim().toLowerCase();
+  const recipients = [
+    ...new Map(
+      [...(await getAllAdminEmails()), ...(notificationEmail ? [notificationEmail] : [])].map(
+        (email) => [email.toLowerCase(), email],
+      ),
+    ).values(),
+  ];
   const delivery = await sendContactMessageEmail({
     to: recipients,
     name: parsed.data.name,
