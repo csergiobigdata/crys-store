@@ -3,7 +3,7 @@
 import { Minus, Plus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { ButtonLink } from "@/components/ui/button";
 import { getCartDetails } from "@/lib/cart/actions";
@@ -12,24 +12,42 @@ import { formatCurrency } from "@/lib/utils/format";
 
 export function CartView() {
   const { lines, hydrated, setQuantity, removeItem } = useCart();
-  const [details, setDetails] = useState<CartLineDetails[]>([]);
+  const [catalog, setCatalog] = useState<CartLineDetails[]>([]);
   const [detailsLoaded, setDetailsLoaded] = useState(false);
+
+  // Nome, preço, foto e estoque só mudam quando entra ou sai um item: mudar a
+  // quantidade NÃO precisa ir ao servidor. A assinatura abaixo muda só com o
+  // conjunto de itens.
+  const itemsKey = useMemo(
+    () => lines.map((line) => line.variantId).sort().join(","),
+    [lines],
+  );
 
   useEffect(() => {
     if (!hydrated) return;
     let cancelled = false;
 
-    getCartDetails(lines).then((result) => {
-      if (!cancelled) {
-        setDetails(result);
-        setDetailsLoaded(true);
-      }
-    });
+    getCartDetails(itemsKey ? itemsKey.split(",").map((variantId) => ({ variantId, quantity: 1 })) : []).then(
+      (result) => {
+        if (!cancelled) {
+          setCatalog(result);
+          setDetailsLoaded(true);
+        }
+      },
+    );
 
     return () => {
       cancelled = true;
     };
-  }, [hydrated, lines]);
+  }, [hydrated, itemsKey]);
+
+  // A quantidade exibida vem do carrinho local: +/- responde na hora.
+  const details = useMemo(() => {
+    const quantityById = new Map(lines.map((line) => [line.variantId, line.quantity]));
+    return catalog
+      .filter((item) => quantityById.has(item.variantId))
+      .map((item) => ({ ...item, quantity: quantityById.get(item.variantId) ?? item.quantity }));
+  }, [catalog, lines]);
 
   if (!hydrated || !detailsLoaded) {
     return <p className="py-16 text-center text-plum-soft">Carregando carrinho...</p>;
@@ -90,33 +108,22 @@ export function CartView() {
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <div className="flex items-center rounded-full border border-rose/30">
-                  <button
-                    type="button"
-                    aria-label="Diminuir quantidade"
-                    disabled={item.quantity <= 1}
-                    onClick={() => setQuantity(item.variantId, item.quantity - 1)}
-                    className="flex h-8 w-8 items-center justify-center text-plum-soft disabled:opacity-40"
-                  >
-                    <Minus className="h-3.5 w-3.5" />
-                  </button>
-                  <span className="w-7 text-center text-sm font-medium text-plum">
-                    {item.quantity}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="Aumentar quantidade"
-                    disabled={item.quantity >= Math.min(item.stockQuantity, MAX_QUANTITY_PER_ITEM)}
-                    onClick={() => setQuantity(item.variantId, item.quantity + 1)}
-                    className="flex h-8 w-8 items-center justify-center text-plum-soft disabled:opacity-40"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+                <QuantityStepper
+                  quantity={item.quantity}
+                  max={Math.max(1, Math.min(item.stockQuantity, MAX_QUANTITY_PER_ITEM))}
+                  onChange={(next) => setQuantity(item.variantId, next)}
+                />
                 <p className="font-medium text-plum">
                   {formatCurrency(item.unitPrice * item.quantity)}
                 </p>
               </div>
+              {item.quantity > item.stockQuantity && (
+                <p className="mt-2 text-sm text-error">
+                  {item.stockQuantity > 0
+                    ? `Só há ${item.stockQuantity} em estoque. Ajuste a quantidade para continuar.`
+                    : "Item sem estoque no momento."}
+                </p>
+              )}
             </div>
           </li>
         ))}
@@ -135,6 +142,67 @@ export function CartView() {
           Ir para o checkout
         </ButtonLink>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Quantidade do item: botões − e + (respondem na hora) e campo para digitar o
+ * valor direto — evita clicar dezenas de vezes para mudar de 63 para 5.
+ */
+function QuantityStepper({
+  quantity,
+  max,
+  onChange,
+}: {
+  quantity: number;
+  max: number;
+  onChange: (next: number) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+
+  function commit() {
+    if (draft === null) return;
+    const parsed = Number.parseInt(draft, 10);
+    setDraft(null);
+    if (!Number.isFinite(parsed)) return;
+    onChange(Math.min(Math.max(parsed, 1), max));
+  }
+
+  return (
+    <div className="flex items-center rounded-full border border-rose/30">
+      <button
+        type="button"
+        aria-label="Diminuir quantidade"
+        disabled={quantity <= 1}
+        onClick={() => onChange(quantity - 1)}
+        className="flex h-8 w-8 items-center justify-center text-plum-soft disabled:opacity-40"
+      >
+        <Minus className="h-3.5 w-3.5" />
+      </button>
+      <input
+        type="text"
+        inputMode="numeric"
+        aria-label="Quantidade"
+        value={draft ?? String(quantity)}
+        onChange={(event) => setDraft(event.target.value.replace(/\D/g, "").slice(0, 2))}
+        onFocus={(event) => event.target.select()}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.currentTarget.blur();
+          if (event.key === "Escape") setDraft(null);
+        }}
+        className="w-10 bg-transparent text-center text-sm font-medium text-plum outline-none"
+      />
+      <button
+        type="button"
+        aria-label="Aumentar quantidade"
+        disabled={quantity >= max}
+        onClick={() => onChange(quantity + 1)}
+        className="flex h-8 w-8 items-center justify-center text-plum-soft disabled:opacity-40"
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -13,6 +14,13 @@ import { getServerCart, syncServerCartItem } from "@/lib/cart/actions";
 import { type CartLine, MAX_QUANTITY_PER_ITEM } from "@/lib/cart/types";
 
 const STORAGE_KEY = "chrys-cart";
+// Marca que o carrinho local já foi unido ao da conta nesta sessão de login.
+// Sem ela, cada recarregamento somaria o carrinho local ao do servidor de novo
+// e a quantidade dobraria a cada página aberta.
+const SYNCED_KEY = "chrys-cart-synced";
+// Espera o cliente parar de clicar em +/- antes de gravar no servidor: só o
+// valor final de cada item viaja, em vez de uma chamada por clique.
+const SYNC_DELAY_MS = 400;
 
 type CartContextValue = {
   lines: CartLine[];
@@ -41,6 +49,23 @@ function writeLocalCart(lines: CartLine[]) {
   } catch {
     // localStorage indisponível (modo privado, cookies bloqueados, etc.) —
     // o carrinho continua funcionando só na memória da sessão atual.
+  }
+}
+
+function readSyncedFlag(): boolean {
+  try {
+    return localStorage.getItem(SYNCED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeSyncedFlag(value: boolean) {
+  try {
+    if (value) localStorage.setItem(SYNCED_KEY, "1");
+    else localStorage.removeItem(SYNCED_KEY);
+  } catch {
+    // sem localStorage: segue sem a marca
   }
 }
 
@@ -73,16 +98,33 @@ export function CartProvider({
 
       if (isLoggedIn) {
         const server = await getServerCart();
-        const merged = mergeLines(local, server);
-        if (!cancelled) {
-          setLines(merged);
-          writeLocalCart(merged);
+        if (readSyncedFlag()) {
+          // Já unido nesta sessão: o servidor é a fonte da verdade.
+          if (!cancelled) {
+            setLines(server);
+            writeLocalCart(server);
+          }
+        } else {
+          // Primeiro carregamento logado: une o carrinho de visitante ao da conta.
+          const merged = mergeLines(local, server);
+          if (!cancelled) {
+            setLines(merged);
+            writeLocalCart(merged);
+            writeSyncedFlag(true);
+          }
+          merged.forEach((line) => {
+            void syncServerCartItem(line.variantId, line.quantity);
+          });
         }
-        merged.forEach((line) => {
-          void syncServerCartItem(line.variantId, line.quantity);
-        });
       } else if (!cancelled) {
-        setLines(local);
+        if (readSyncedFlag()) {
+          // O cliente acabou de sair da conta: o carrinho dela não fica no navegador.
+          writeSyncedFlag(false);
+          writeLocalCart([]);
+          setLines([]);
+        } else {
+          setLines(local);
+        }
       }
 
       if (!cancelled) setHydrated(true);
@@ -93,6 +135,8 @@ export function CartProvider({
       cancelled = true;
     };
   }, [isLoggedIn]);
+
+  const syncTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
   const applyChange = useCallback(
     (variantId: string, requested: number) => {
@@ -108,7 +152,15 @@ export function CartProvider({
         return next;
       });
       if (isLoggedIn) {
-        void syncServerCartItem(variantId, quantity);
+        const timers = syncTimers.current;
+        clearTimeout(timers.get(variantId));
+        timers.set(
+          variantId,
+          setTimeout(() => {
+            timers.delete(variantId);
+            void syncServerCartItem(variantId, quantity);
+          }, SYNC_DELAY_MS),
+        );
       }
     },
     [isLoggedIn],
