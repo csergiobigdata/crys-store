@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
+import { ProofFilePicker } from "@/components/checkout/proof-file-picker";
 import { Button } from "@/components/ui/button";
-import { uploadPixProof } from "@/lib/pix/upload-proof";
+import { uploadPixProof, type UploadProofState } from "@/lib/pix/upload-proof";
 
 export function PixPaymentPanel({
   orderNumber,
@@ -27,7 +28,20 @@ export function PixPaymentPanel({
 }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const [state, formAction, pending] = useActionState(uploadPixProof, undefined);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  // Troca a chave do seletor depois de um envio bem-sucedido, para limpá-lo.
+  const [pickerKey, setPickerKey] = useState(0);
+  const [state, formAction, pending] = useActionState(
+    async (previous: UploadProofState, formData: FormData) => {
+      const result = await uploadPixProof(previous, formData);
+      if (result?.success) {
+        setProofFile(null);
+        setPickerKey((key) => key + 1);
+      }
+      return result;
+    },
+    undefined,
+  );
 
   // Pix automático: consulta o pedido a cada 5 s até o webhook confirmar o pagamento.
   useEffect(() => {
@@ -89,13 +103,7 @@ export function PixPaymentPanel({
         <form action={formAction} className="mt-4 space-y-3">
           <input type="hidden" name="orderNumber" value={orderNumber} />
           <input type="hidden" name="token" value={token} />
-          <input
-            type="file"
-            name="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            required
-            className="block w-full text-sm text-plum-soft"
-          />
+          <ProofFilePicker key={pickerKey} onChange={setProofFile} />
           {state?.error && (
             <p className="rounded-lg bg-error-light px-3 py-2 text-sm text-error" role="alert">
               {state.error}
@@ -106,9 +114,12 @@ export function PixPaymentPanel({
               Comprovante enviado com sucesso!
             </p>
           )}
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || !proofFile} className="w-full sm:w-auto">
             {pending ? "Enviando..." : "Enviar comprovante"}
           </Button>
+          {!proofFile && !pending && (
+            <p className="text-xs text-plum-soft">Escolha o arquivo do comprovante para liberar o envio.</p>
+          )}
         </form>
         </>
       )}
