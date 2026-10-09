@@ -7,7 +7,8 @@ import { notifyAdminNewPixOrder } from "@/lib/email/notify-admin";
 import { sendOrderCreatedEmail } from "@/lib/email/notify-customer";
 import { isCardPaymentEnabled } from "@/lib/mercadopago/card-enabled";
 import { type CepAddress, lookupCepAddress } from "@/lib/orders/cep-lookup";
-import { getShippingOptions, type ShippingOption } from "@/lib/orders/shipping";
+import { getShippingOptions, resolveZone, type ShippingOption } from "@/lib/orders/shipping";
+import { resolveLocalDeliveryInputs } from "@/lib/orders/local-delivery-server";
 import { cartHasTestProduct } from "@/lib/orders/test-products";
 import { createPixPaymentForOrder } from "@/lib/pix/create-payment";
 import { getPixExpirationHours } from "@/lib/pix/settings";
@@ -54,7 +55,17 @@ export async function getCepQuote(
 
   const city = lookup.status === "ok" ? lookup.address.city : undefined;
   const hasTestProduct = await cartHasTestProduct(variantIds);
-  const quote = getShippingOptions({ cep: digits, city, totalUnits, hasTestProduct });
+  const localDelivery = await resolveLocalDeliveryInputs(
+    digits,
+    hasTestProduct || resolveZone(digits, city)?.zone === "same_city",
+  );
+  const quote = getShippingOptions({
+    cep: digits,
+    city,
+    totalUnits,
+    hasTestProduct,
+    local: localDelivery,
+  });
   if (!quote) {
     return { address: null, addressError: "CEP não encontrado.", options: [] };
   }
@@ -132,11 +143,18 @@ export async function createOrder(
   // O frete é recalculado aqui no servidor: o cliente só escolhe o serviço, nunca
   // envia o valor. A cidade vem da consulta do CEP (com a digitada como reserva).
   const totalUnits = data.items.reduce((sum, item) => sum + item.quantity, 0);
+  const shippingCity = cityLookup.status === "ok" ? cityLookup.address.city : data.city;
+  const hasTestProduct = await cartHasTestProduct(data.items.map((item) => item.variantId));
+  const localDelivery = await resolveLocalDeliveryInputs(
+    data.cep,
+    hasTestProduct || resolveZone(data.cep, shippingCity)?.zone === "same_city",
+  );
   const quote = getShippingOptions({
     cep: data.cep,
-    city: cityLookup.status === "ok" ? cityLookup.address.city : data.city,
+    city: shippingCity,
     totalUnits,
-    hasTestProduct: await cartHasTestProduct(data.items.map((item) => item.variantId)),
+    hasTestProduct,
+    local: localDelivery,
   });
   const shippingOption = quote?.options.find((option) => option.id === data.shippingMethod);
   if (!shippingOption) {

@@ -41,7 +41,7 @@ export const checkoutSchema = z.object({
     .length(2, { error: "Informe a UF (2 letras)." })
     .transform((v) => v.toUpperCase()),
   paymentMethod: z.enum(["pix", "cartao"], { error: "Escolha a forma de pagamento." }),
-  shippingMethod: z.enum(["pac", "sedex", "mini", "same_day", "next_day", "local_arranged"], {
+  shippingMethod: z.enum(["pac", "sedex", "mini", "same_day", "next_day", "local_arranged", "motoboy"], {
     error: "Escolha uma opção de envio.",
   }),
   couponCode: z

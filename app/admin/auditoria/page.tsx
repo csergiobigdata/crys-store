@@ -16,6 +16,7 @@ const actionLabels: Record<string, string> = {
   cancel_order: "Cancelou pedido",
   mark_order_shipped: "Marcou pedido como enviado",
   update_general_settings: "Atualizou configurações gerais",
+  update_local_delivery: "Atualizou a entrega local (frete)",
   create_shipping_rule: "Criou regra de frete",
   update_shipping_rule: "Editou regra de frete",
 };

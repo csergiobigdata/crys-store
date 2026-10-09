@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_LOCAL_FEE, MAX_LOCAL_TIERS } from "@/lib/orders/local-delivery";
 import { normalizePixKey } from "@/lib/pix/key";
 
 export const generalSettingsSchema = z.object({
@@ -37,4 +38,40 @@ export const generalSettingsSchema = z.object({
   companyCnpjOuCpf: z.string().trim().default(""),
   companyEndereco: z.string().trim().default(""),
   companyContato: z.string().trim().min(1),
+});
+
+export const localDeliverySchema = z.object({
+  originCep: z
+    .string()
+    .trim()
+    .transform((value) => value.replace(/\D/g, ""))
+    .refine((value) => value.length === 8, { message: "Informe o CEP da loja com 8 dígitos." }),
+  originLat: z.number().min(-34).max(6).nullable(),
+  originLng: z.number().min(-74).max(-28).nullable(),
+  tiers: z
+    .array(
+      z.object({
+        upToKm: z
+          .number()
+          .positive({ message: "O raio de cada faixa deve ser maior que zero." })
+          .max(100, { message: "O raio máximo de uma faixa é 100 km." }),
+        fee: z
+          .number()
+          .min(0, { message: "A taxa não pode ser negativa." })
+          .max(MAX_LOCAL_FEE, {
+            message: `A taxa máxima da entrega local é R$ ${MAX_LOCAL_FEE.toFixed(2).replace(".", ",")}.`,
+          }),
+      }),
+    )
+    .min(1, { message: "Cadastre ao menos uma faixa de distância." })
+    .max(MAX_LOCAL_TIERS, { message: `Use no máximo ${MAX_LOCAL_TIERS} faixas.` })
+    .refine((tiers) => tiers.every((tier, i) => i === 0 || tier.upToKm > tiers[i - 1].upToKm), {
+      message: "Os raios das faixas devem ser crescentes (ex.: 10 km, depois 20 km).",
+    }),
+  motoboyFee: z
+    .number()
+    .min(0, { message: "O valor do motoboy não pode ser negativo." })
+    .max(MAX_LOCAL_FEE, {
+      message: `O valor máximo do motoboy é R$ ${MAX_LOCAL_FEE.toFixed(2).replace(".", ",")}.`,
+    }),
 });

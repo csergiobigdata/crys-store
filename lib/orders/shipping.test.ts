@@ -45,7 +45,7 @@ describe("resolveZone", () => {
 });
 
 describe("getShippingOptions", () => {
-  it("Atibaia: Correios + entrega local no mesmo dia e no dia seguinte", () => {
+  it("Atibaia: Correios + entrega local a combinar + motoboy", () => {
     const quote = getShippingOptions({
       cep: "12940-000",
       city: "Atibaia",
@@ -56,17 +56,19 @@ describe("getShippingOptions", () => {
       "pac",
       "sedex",
       "mini",
-      "same_day",
-      "next_day",
       "local_arranged",
+      "motoboy",
     ]);
   });
 
-  it("depois das 14h ou no domingo não oferece entrega no mesmo dia", () => {
+  it("na região, depois das 14h ou no domingo não oferece entrega no mesmo dia", () => {
     for (const now of [tuesdayEvening, sunday]) {
-      const ids = getShippingOptions({ cep: "12940-000", totalUnits: 1, now })?.options.map(
-        (o) => o.id,
-      );
+      const ids = getShippingOptions({
+        cep: "12900-000",
+        city: "Bragança Paulista",
+        totalUnits: 1,
+        now,
+      })?.options.map((o) => o.id);
       expect(ids).not.toContain("same_day");
       expect(ids).toContain("next_day");
     }
@@ -116,14 +118,14 @@ describe("getShippingOptions", () => {
 });
 
 describe("entrega local a combinar", () => {
-  it("aparece em Atibaia, com valor zero e prazo a combinar", () => {
+  it("aparece em Atibaia com prazo a combinar (distância desconhecida: taxa da faixa mais distante)", () => {
     const option = getShippingOptions({
       cep: "12940-000",
       city: "Atibaia",
       totalUnits: 1,
       now: tuesdayMorning,
     })?.options.find((o) => o.id === "local_arranged");
-    expect(option?.price).toBe(0);
+    expect(option?.price).toBe(30);
     expect(option?.deadline).toBe("a combinar");
     expect(option?.label).toContain("a combinar com a loja");
   });
@@ -155,5 +157,60 @@ describe("entrega local a combinar", () => {
       })?.options.map((o) => o.id);
       expect(ids).toContain("local_arranged");
     }
+  });
+});
+
+describe("entrega local por raio de distância (Atibaia)", () => {
+  const tiers = [
+    { upToKm: 10, fee: 0 },
+    { upToKm: 20, fee: 35 },
+  ];
+  const base = { cep: "12940-000", city: "Atibaia", totalUnits: 1, now: tuesdayMorning };
+  const feeFor = (distanceKm: number | null) =>
+    getShippingOptions({ ...base, local: { tiers, motoboyFee: 22, distanceKm } })?.options.find(
+      (o) => o.id === "local_arranged",
+    );
+
+  it("até 10 km é grátis", () => {
+    expect(feeFor(3)?.price).toBe(0);
+    expect(feeFor(10)?.price).toBe(0);
+  });
+
+  it("de 10 a 20 km cobra a taxa da faixa definida pelo admin", () => {
+    expect(feeFor(10.1)?.price).toBe(35);
+    expect(feeFor(20)?.price).toBe(35);
+  });
+
+  it("além do último raio não oferece a entrega local, só o motoboy", () => {
+    expect(feeFor(25)).toBeUndefined();
+    const ids = getShippingOptions({
+      ...base,
+      local: { tiers, motoboyFee: 22, distanceKm: 25 },
+    })?.options.map((o) => o.id);
+    expect(ids).toContain("motoboy");
+  });
+
+  it("sem distância conhecida usa a taxa da faixa mais distante (nunca promete grátis)", () => {
+    expect(feeFor(null)?.price).toBe(35);
+  });
+
+  it("motoboy usa o valor padrão definido pelo admin", () => {
+    const motoboy = getShippingOptions({
+      ...base,
+      local: { tiers, motoboyFee: 22, distanceKm: 3 },
+    })?.options.find((o) => o.id === "motoboy");
+    expect(motoboy?.price).toBe(22);
+  });
+
+  it("com produto de teste fora de Atibaia a entrega a combinar é R$ 0,00", () => {
+    const option = getShippingOptions({
+      cep: "20040-020",
+      city: "Rio de Janeiro",
+      totalUnits: 1,
+      hasTestProduct: true,
+      local: { tiers, motoboyFee: 22, distanceKm: 430 },
+      now: tuesdayMorning,
+    })?.options.find((o) => o.id === "local_arranged");
+    expect(option?.price).toBe(0);
   });
 });

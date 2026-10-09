@@ -12,6 +12,12 @@
  * `LOCAL_RATES` conforme o que a loja realmente paga.
  */
 
+import {
+  DEFAULT_LOCAL_INPUTS,
+  localFeeForDistance,
+  type LocalDeliveryInputs,
+} from "@/lib/orders/local-delivery";
+
 export const SHIPPING_ORIGIN = { city: "Atibaia", state: "SP" } as const;
 
 export type ShippingMethodId =
@@ -20,7 +26,8 @@ export type ShippingMethodId =
   | "mini"
   | "same_day"
   | "next_day"
-  | "local_arranged";
+  | "local_arranged"
+  | "motoboy";
 
 export type ShippingOption = {
   id: ShippingMethodId;
@@ -191,11 +198,12 @@ const CORREIOS_RATES: Record<"pac" | "sedex", Record<CorreiosZone, Rate>> = {
  */
 const MINI_ENVIOS_RATE: Rate = { price: 11.9, days: [3, 5] };
 
-/** Entrega local por motoboy/app de entrega (Lalamove, Borzoi etc.). */
-const LOCAL_RATES = {
-  same_city: { same_day: 14.9, next_day: 9.9 },
-  region: { same_day: 24.9, next_day: 16.9 },
-} as const;
+/**
+ * Entrega por motoboy/app de entrega (Lalamove, Borzoi etc.) nas cidades da
+ * região de Atibaia. Na própria Atibaia (zona same_city) a entrega local usa as
+ * taxas definidas pelo administrador (ver lib/orders/local-delivery.ts).
+ */
+const REGION_LOCAL_RATES = { same_day: 24.9, next_day: 16.9 } as const;
 
 /** Mini Envios só vale para pedidos de até este total de unidades. */
 export const MINI_ENVIOS_MAX_UNITS = 3;
@@ -238,6 +246,8 @@ export function getShippingOptions(params: {
   city?: string;
   totalUnits: number;
   hasTestProduct?: boolean;
+  /** Taxas e distância da entrega local (padrão: taxas iniciais, distância desconhecida). */
+  local?: LocalDeliveryInputs;
   now?: Date;
 }): ShippingQuote | null {
   const resolved = resolveZone(params.cep, params.city);
@@ -274,14 +284,13 @@ export function getShippingOptions(params: {
     });
   }
 
-  if (zone === "same_city" || zone === "region") {
-    const local = LOCAL_RATES[zone];
+  if (zone === "region") {
     if (canDeliverSameDay(params.now ?? new Date())) {
       options.push({
         id: "same_day",
         label: "Entrega no mesmo dia",
         description: "Motoboy ou app de entrega rápida (Lalamove/Borzoi). Pedido até as 14h.",
-        price: local.same_day,
+        price: REGION_LOCAL_RATES.same_day,
         deadline: "hoje",
       });
     }
@@ -289,21 +298,47 @@ export function getShippingOptions(params: {
       id: "next_day",
       label: "Entrega no dia seguinte",
       description: "Motoboy ou app de entrega rápida (Lalamove/Borzoi).",
-      price: local.next_day,
+      price: REGION_LOCAL_RATES.next_day,
       deadline: "amanhã",
     });
   }
 
-  // Entrega local combinada diretamente com a loja: vale para a cidade da loja
-  // (Atibaia) ou quando há produto de teste no carrinho. Sem valor fixo — o
-  // frete entra como R$ 0,00 e o valor é acertado com a loja.
-  if (zone === "same_city" || params.hasTestProduct) {
+  // Entrega local, combinada com a loja. Na cidade da loja (Atibaia) a taxa
+  // depende do raio de distância configurado pelo administrador (de R$ 0,00 até
+  // R$ 50,00). Com produto de teste no carrinho a opção vale para qualquer
+  // destino, sem taxa (R$ 0,00) fora da cidade da loja.
+  const local = params.local ?? DEFAULT_LOCAL_INPUTS;
+  const tierFee = localFeeForDistance(local.tiers, local.distanceKm);
+
+  if (zone === "same_city" && tierFee !== null) {
+    const km = local.distanceKm === null ? null : Math.round(local.distanceKm * 10) / 10;
+    options.push({
+      id: "local_arranged",
+      label: "Entrega local (mesmo dia / dia seguinte), a combinar com a loja",
+      description:
+        km === null
+          ? "A loja entra em contato para combinar a entrega. Taxa conforme a distância."
+          : `Distância aproximada de ${km.toLocaleString("pt-BR")} km da loja. A loja entra em contato para combinar a entrega.`,
+      price: tierFee,
+      deadline: "a combinar",
+    });
+  } else if (params.hasTestProduct) {
     options.push({
       id: "local_arranged",
       label: "Entrega local (mesmo dia / dia seguinte), a combinar com a loja",
       description: "A loja entra em contato para combinar a entrega e o valor.",
       price: 0,
       deadline: "a combinar",
+    });
+  }
+
+  if (zone === "same_city") {
+    options.push({
+      id: "motoboy",
+      label: "Entrega por motoboy",
+      description: "Motoboy contratado pela loja, com valor padrão do serviço.",
+      price: local.motoboyFee,
+      deadline: "mesmo dia ou dia seguinte",
     });
   }
 

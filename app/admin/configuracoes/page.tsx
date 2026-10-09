@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { GeneralSettingsForm } from "@/components/admin/settings/general-settings-form";
+import { LocalDeliveryForm } from "@/components/admin/settings/local-delivery-form";
+import { getLocalDeliveryConfig } from "@/lib/orders/local-delivery-server";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Configurações — Admin" };
@@ -10,6 +12,7 @@ export default async function AdminSettingsPage() {
   const { data: settings } = await supabase.from("app_settings").select("key, value");
 
   const settingsByKey = new Map((settings ?? []).map((s) => [s.key, s.value]));
+  const localDelivery = await getLocalDeliveryConfig();
 
   // Chave Pix cadastrada pelo admin; se ainda não houver, sugere a do .env.
   const storedPix = settingsByKey.get("pix_config") as
@@ -42,6 +45,7 @@ export default async function AdminSettingsPage() {
           O frete é calculado a partir de Atibaia-SP, por zona de destino, com
           PAC, SEDEX, Mini Envios e entrega local (mesmo dia / dia seguinte).
         </p>
+        <LocalDeliveryForm config={localDelivery} />
       </section>
     </div>
   );
