@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Carrinho: botão de lixeira por produto (exclui só aquele produto) e botão
+  "Esvaziar carrinho" disponível apenas para administradores, sempre sobre o
+  próprio carrinho.
+
 ## 1.0.0 — Primeira fase (Pix manual)
 
 Versão final da 1ª fase da Chrys Store. Pagamento por **Pix** (estático com
