@@ -67,6 +67,23 @@ export async function clearServerCart() {
   await supabase.from("cart_items").delete().eq("profile_id", user.id);
 }
 
+/**
+ * "Esvaziar carrinho": disponível só para administradores e sempre sobre o
+ * PRÓPRIO carrinho (a sessão decide de quem é — não há parâmetro de usuário).
+ * O carrinho de um cliente só pode ser alterado pelo próprio cliente.
+ */
+export async function emptyOwnCartAsAdmin(): Promise<{ error?: string; success?: boolean }> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") {
+    return { error: "Somente administradores podem esvaziar o carrinho de uma só vez." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("cart_items").delete().eq("profile_id", user.id);
+  if (error) return { error: "Não foi possível esvaziar o carrinho. Tente novamente." };
+  return { success: true };
+}
+
 export async function getCartDetails(lines: CartLine[]): Promise<CartLineDetails[]> {
   if (lines.length === 0) return [];
 

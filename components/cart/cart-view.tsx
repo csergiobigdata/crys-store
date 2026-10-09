@@ -1,17 +1,19 @@
 "use client";
 
-import { Minus, Plus, X } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { ButtonLink } from "@/components/ui/button";
-import { getCartDetails } from "@/lib/cart/actions";
+import { emptyOwnCartAsAdmin, getCartDetails } from "@/lib/cart/actions";
 import { type CartLineDetails, MAX_QUANTITY_PER_ITEM } from "@/lib/cart/types";
 import { formatCurrency } from "@/lib/utils/format";
 
-export function CartView() {
-  const { lines, hydrated, setQuantity, removeItem } = useCart();
+export function CartView({ isAdmin = false }: { isAdmin?: boolean }) {
+  const { lines, hydrated, setQuantity, removeItem, clear } = useCart();
+  const [emptying, setEmptying] = useState(false);
+  const [emptyError, setEmptyError] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<CartLineDetails[]>([]);
   const [detailsLoaded, setDetailsLoaded] = useState(false);
 
@@ -66,8 +68,35 @@ export function CartView() {
 
   const subtotal = details.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
+  async function emptyCart() {
+    if (!window.confirm("Esvaziar o carrinho? Todos os produtos serão removidos.")) return;
+    setEmptying(true);
+    setEmptyError(null);
+    const result = await emptyOwnCartAsAdmin();
+    setEmptying(false);
+    if (result.error) {
+      setEmptyError(result.error);
+      return;
+    }
+    clear();
+  }
+
   return (
     <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+      <div>
+      {isAdmin && (
+        <div className="mb-2 flex items-center justify-end gap-3">
+          {emptyError && <p className="text-sm text-error">{emptyError}</p>}
+          <button
+            type="button"
+            onClick={() => void emptyCart()}
+            disabled={emptying}
+            className="rounded-full border border-error/50 px-4 py-1.5 text-sm font-medium text-error hover:bg-error-light disabled:opacity-50"
+          >
+            {emptying ? "Esvaziando..." : "Esvaziar carrinho"}
+          </button>
+        </div>
+      )}
       <ul className="divide-y divide-rose-light">
         {details.map((item) => (
           <li key={item.variantId} className="flex gap-4 py-6">
@@ -100,10 +129,11 @@ export function CartView() {
                 <button
                   type="button"
                   onClick={() => removeItem(item.variantId)}
-                  aria-label="Remover item"
-                  className="text-plum-soft hover:text-error"
+                  aria-label={`Excluir ${item.productName} do carrinho`}
+                  title="Excluir este produto do carrinho"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-plum-soft transition-colors hover:bg-error-light hover:text-error"
                 >
-                  <X className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
 
@@ -128,6 +158,7 @@ export function CartView() {
           </li>
         ))}
       </ul>
+      </div>
 
       <div className="h-fit rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
         <h2 className="font-display text-xl text-plum">Resumo</h2>

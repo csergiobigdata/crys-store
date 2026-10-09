@@ -185,6 +185,9 @@ export function CartProvider({
   );
 
   const clear = useCallback(() => {
+    // Gravações pendentes (debounce) não podem recolocar itens depois de esvaziar.
+    syncTimers.current.forEach((timer) => clearTimeout(timer));
+    syncTimers.current.clear();
     setLines([]);
     writeLocalCart([]);
   }, []);
