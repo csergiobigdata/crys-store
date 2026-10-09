@@ -63,6 +63,7 @@ export async function login(
           "Seu e-mail ainda não foi confirmado. Abra o e-mail que enviamos no cadastro (veja também o spam) e clique no link de confirmação.",
       };
     }
+    console.error("Falha no login (signInWithPassword):", error.code, error.message);
     return { error: "E-mail ou senha incorretos." };
   }
 
