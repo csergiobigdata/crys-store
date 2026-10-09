@@ -5,6 +5,28 @@ export const loginSchema = z.object({
   password: z.string().min(1, { error: "Informe sua senha." }),
 });
 
+/** Regras de senha de toda a loja (cadastro e redefinição). */
+const passwordRule = z
+  .string()
+  .min(8, { error: "A senha deve ter ao menos 8 caracteres." })
+  .regex(/[a-zA-Z]/, { error: "A senha deve conter ao menos uma letra." })
+  .regex(/[0-9]/, { error: "A senha deve conter ao menos um número." });
+
+export const forgotPasswordSchema = z.object({
+  email: z.email({ error: "Informe um e-mail válido." }),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    tokenHash: z.string().min(10, { error: "Link inválido. Peça um novo." }),
+    password: passwordRule,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    error: "As senhas não coincidem.",
+    path: ["confirmPassword"],
+  });
+
 export const signupSchema = z
   .object({
     fullName: z
@@ -12,11 +34,7 @@ export const signupSchema = z
       .trim()
       .min(2, { error: "Informe seu nome completo." }),
     email: z.email({ error: "Informe um e-mail válido." }),
-    password: z
-      .string()
-      .min(8, { error: "A senha deve ter ao menos 8 caracteres." })
-      .regex(/[a-zA-Z]/, { error: "A senha deve conter ao menos uma letra." })
-      .regex(/[0-9]/, { error: "A senha deve conter ao menos um número." }),
+    password: passwordRule,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

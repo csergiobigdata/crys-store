@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AboutDialog } from "@/components/layout/about-dialog";
+import { APP_VERSION } from "@/lib/app-version";
 import { Logo } from "@/components/ui/logo";
 import { getCompanyInfo } from "@/lib/legal/company-info";
 import { getPrimaryAdminContact } from "@/lib/site/contact";
@@ -20,7 +21,6 @@ const legalLinks = [
 export async function Footer() {
   const [company, primaryAdmin] = await Promise.all([getCompanyInfo(), getPrimaryAdminContact()]);
   const razaoSocial = company.razao_social || "[REVISAR] razão social não configurada";
-  const version = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0";
 
   return (
     <footer className="mt-24 bg-gradient-to-br from-rose-dark to-rose text-white/90">
@@ -48,7 +48,7 @@ export async function Footer() {
                 <AboutDialog
                   email={primaryAdmin?.email ?? null}
                   phone={primaryAdmin?.phone ?? null}
-                  version={version}
+                  version={APP_VERSION}
                 />
               </li>
             </ul>

@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: "Entrar" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string; confirmado?: string }>;
+  searchParams: Promise<{ redirect?: string; confirmado?: string; senha?: string }>;
 }) {
-  const { redirect, confirmado } = await searchParams;
+  const { redirect, confirmado, senha } = await searchParams;
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
@@ -27,6 +27,15 @@ export default async function LoginPage({
           className="mt-4 rounded-lg bg-success-light px-3 py-2 text-sm text-success"
         >
           E-mail confirmado! Agora é só entrar com seu e-mail e senha.
+        </p>
+      )}
+
+      {senha === "alterada" && (
+        <p
+          role="status"
+          className="mt-4 rounded-lg bg-success-light px-3 py-2 text-sm text-success"
+        >
+          Senha alterada com sucesso! Entre com a sua nova senha.
         </p>
       )}
 

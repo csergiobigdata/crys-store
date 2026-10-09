@@ -5,9 +5,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 /**
  * Varredura agendada que envia o lembrete de pagamento pendente (dia seguinte
  * ao pedido) e expira pedidos Pix vencidos e pedidos de cartão abandonados, liberando o estoque — reforço ao "verificação ao acessar"
- * feito em getOrderForViewing (docs/arquitetura.md, seção 4). Configure um
- * Netlify Scheduled Function ou Cloudflare Cron Trigger para chamar esta
- * rota periodicamente (ex.: a cada 15 min) com o header Authorization abaixo.
+ * feito em getOrderForViewing (docs/arquitetura.md, seção 4).
+ *
+ * Quem chama: o Vercel Cron, configurado em vercel.json (uma vez por dia, o
+ * máximo do plano gratuito). Com a variável CRON_SECRET definida no projeto, a
+ * Vercel envia sozinha o header "Authorization: Bearer <CRON_SECRET>" conferido
+ * abaixo. Qualquer outro agendador também pode chamar a rota com esse header.
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;

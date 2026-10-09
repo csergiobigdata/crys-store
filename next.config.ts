@@ -1,11 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type { NextConfig } from "next";
-
-// Versão do aplicativo (package.json), exibida na janela "Sobre".
-const appVersion = (
-  JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as { version: string }
-).version;
 
 // Payment Brick do Mercado Pago carrega um script remoto e abre iframes
 // próprios para o fluxo de cartão — por isso script-src/frame-src/connect-src
@@ -31,7 +24,6 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
-  env: { NEXT_PUBLIC_APP_VERSION: appVersion },
   async headers() {
     return [
       {

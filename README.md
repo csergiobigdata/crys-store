@@ -175,12 +175,12 @@ combinadas, sem depender de infraestrutura paga:
    confere o prazo e expira na hora, liberando o estoque.
 2. **Varredura agendada**: a rota `GET /api/cron/expire-orders` (protegida
    por `CRON_SECRET` no header `Authorization: Bearer <CRON_SECRET>`) expira
-   em lote todos os pedidos vencidos — cobre o caso de ninguém acessar a
-   página do pedido. `.github/workflows/expire-orders.yml` já chama essa
-   rota a cada 15 minutos via GitHub Actions (grátis, portátil) — só
-   precisa configurar os secrets `SITE_URL` e `CRON_SECRET` no repositório
-   (**Settings → Secrets and variables → Actions**). Veja
-   [Deploy](#deploy) para alternativas nativas do Netlify/Cloudflare.
+   em lote todos os pedidos vencidos e envia o lembrete de pagamento — cobre
+   o caso de ninguém acessar a página do pedido. O agendamento é o **Vercel
+   Cron** (`vercel.json`): roda **uma vez por dia, às 06:00 UTC (03:00 em
+   Brasília)**, que é o máximo do plano gratuito (Hobby). Basta a variável
+   `CRON_SECRET` existir no projeto da Vercel: a própria Vercel envia o header
+   de autorização. Não precisa de GitHub Actions.
 
 Pedidos de cartão **recusados** não liberam o estoque imediatamente — o
 cliente pode tentar outro cartão ou trocar para Pix sem perder a reserva;
@@ -346,13 +346,9 @@ pedia, mas vale registrar):
    - `NEXT_PUBLIC_SITE_URL`: o domínio final (ex. `https://chrysstore.com.br`).
 4. No painel do Mercado Pago, atualize a URL do webhook para
    `https://<seu-domínio>/api/webhooks/mercadopago`.
-5. Habilite a varredura de expiração de pedidos: configure os secrets
-   `SITE_URL` e `CRON_SECRET` no GitHub (repositório → **Settings → Secrets
-   and variables → Actions**) para o workflow
-   `.github/workflows/expire-orders.yml` funcionar. Alternativas nativas:
-   um Netlify Scheduled Function ou um Cloudflare Cron Trigger chamando a
-   mesma rota — exigem uma function wrapper própria de cada plataforma,
-   não cobertas aqui.
+5. A varredura de expiração de pedidos já está agendada pelo **Vercel Cron**
+   (`vercel.json`, uma vez por dia). Só confirme que a variável `CRON_SECRET`
+   existe no projeto da Vercel (o valor é qualquer texto longo e aleatório).
 6. HTTPS é automático em ambas as plataformas; o `Strict-Transport-Security`
    já configurado em `next.config.ts` reforça isso.
 

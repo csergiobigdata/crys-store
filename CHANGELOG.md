@@ -1,33 +1,46 @@
 # Changelog
 
-## 1.2.0
+> **A versão do aplicativo é fixa em 1.2.0** (exibida em "Sobre"). Por decisão do
+> dono do projeto, ela não muda a cada deploy: as mudanças novas entram na seção
+> abaixo, sem trocar o número. A constante está em `lib/app-version.ts`.
+
+## 1.2.0 (versão atual) — alterações mais recentes
+
+- "Esqueci minha senha": link no login, e-mail com link de uso único (1 hora) enviado pelo
+  Resend e página para criar a nova senha.
+- Expiração automática de pedidos pelo Vercel Cron (`vercel.json`), uma vez por dia.
+- Versão fixa do aplicativo em 1.2.0.
+
+## Histórico anterior (numeração antiga, antes de a versão ficar fixa)
+
+### 1.2.0 (filtro de palavrões)
 
 - Fale Conosco: filtro de palavrões e ofensas na mensagem (aviso na hora, envio bloqueado no
   navegador e conferido de novo no servidor).
 
-## 1.1.2
+### 1.1.2
 
 - Fale Conosco: um e-mail por administrador (se o provedor recusar um endereço, os outros ainda
   recebem) e o painel de Mensagens mostra para quem foi enviado ou o motivo da falha.
 
-## 1.1.1
+### 1.1.1
 
 - Celulares: a loja declara tema claro único (`color-scheme: only light`), para o navegador não
   escurecer as cores automaticamente.
 
-## 1.1.0
+### 1.1.0
 
 - Painel: contador **"Online agora"** na Visão geral (Supabase Realtime), anônimo, com a
   área do site em que cada aba está (catálogo, carrinho, checkout...). Política de
   Privacidade atualizada.
 
-## 1.0.1
+### 1.0.1
 
 - Carrinho: botão de lixeira por produto (exclui só aquele produto) e botão
   "Esvaziar carrinho" disponível apenas para administradores, sempre sobre o
   próprio carrinho.
 
-## 1.0.0 — Primeira fase (Pix manual)
+### 1.0.0 — Primeira fase (Pix manual)
 
 Versão final da 1ª fase da Chrys Store. Pagamento por **Pix** (estático com
 comprovante e confirmação pelo administrador; Pix automático via Mercado Pago
