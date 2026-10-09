@@ -10,7 +10,13 @@ type VariantWithProductRow = {
   price_override: number | null;
   stock_quantity: number;
   active: boolean;
-  product: { name: string; slug: string; base_price: number; active: boolean } | null;
+  product: {
+    name: string;
+    slug: string;
+    base_price: number;
+    active: boolean;
+    images: { url: string; alt_text: string; position: number }[];
+  } | null;
   image: { url: string; alt_text: string } | null;
 };
 
@@ -70,7 +76,7 @@ export async function getCartDetails(lines: CartLine[]): Promise<CartLineDetails
   const { data } = await supabase
     .from("product_variants")
     .select(
-      "id, attributes, price_override, stock_quantity, active, product:products(name, slug, base_price, active), image:product_images(url, alt_text)",
+      "id, attributes, price_override, stock_quantity, active, product:products(name, slug, base_price, active, images:product_images(url, alt_text, position)), image:product_images(url, alt_text)",
     )
     .in("id", ids);
 
@@ -82,6 +88,12 @@ export async function getCartDetails(lines: CartLine[]): Promise<CartLineDetails
       const row = byId.get(line.variantId);
       if (!row || !row.product) return null;
 
+      // Sem foto própria na variação, usa a primeira foto do produto.
+      const fallbackImage = [...(row.product.images ?? [])].sort(
+        (a, b) => a.position - b.position,
+      )[0];
+      const image = row.image ?? fallbackImage ?? null;
+
       const details: CartLineDetails = {
         variantId: line.variantId,
         quantity: line.quantity,
@@ -89,8 +101,8 @@ export async function getCartDetails(lines: CartLine[]): Promise<CartLineDetails
         productSlug: row.product.slug,
         variantAttributes: (row.attributes as Record<string, string>) ?? {},
         unitPrice: Number(row.price_override ?? row.product.base_price),
-        imageUrl: row.image?.url ?? null,
-        imageAlt: row.image?.alt_text ?? row.product.name,
+        imageUrl: image?.url ?? null,
+        imageAlt: image?.alt_text || row.product.name,
         stockQuantity: row.stock_quantity,
         active: row.active && row.product.active,
       };
