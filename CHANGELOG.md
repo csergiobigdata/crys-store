@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- Painel: contador **"Online agora"** na Visão geral (Supabase Realtime), anônimo, com a
+  área do site em que cada aba está (catálogo, carrinho, checkout...). Política de
+  Privacidade atualizada.
+
 ## 1.0.1
 
 - Carrinho: botão de lixeira por produto (exclui só aquele produto) e botão

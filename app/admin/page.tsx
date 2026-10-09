@@ -9,6 +9,7 @@ import {
   Ticket,
 } from "lucide-react";
 import Link from "next/link";
+import { OnlineNow } from "@/components/admin/online-now";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Painel administrativo" };
@@ -127,6 +128,8 @@ export default async function AdminDashboardPage() {
           </Link>
         ))}
       </div>
+
+      <OnlineNow />
 
       <h2 className="mt-10 font-display text-xl font-semibold text-plum">
         Cadastros &amp; Gestão Admin.

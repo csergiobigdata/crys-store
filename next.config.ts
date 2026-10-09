@@ -22,7 +22,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://*.supabase.co https://picsum.photos https://images.pexels.com https://http2.mlstatic.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://api.mercadopago.com https://events.mercadopago.com https://http2.mlstatic.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mercadopago.com https://events.mercadopago.com https://http2.mlstatic.com",
   "frame-src 'self' https://www.mercadopago.com https://www.mercadopago.com.br",
   "object-src 'none'",
   "base-uri 'self'",

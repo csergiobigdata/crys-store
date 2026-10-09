@@ -68,6 +68,14 @@ export default async function PrivacyPolicyPage() {
         carrinho e sua sessão de login funcionando. Não usamos cookies de
         rastreamento publicitário ou de terceiros.
       </p>
+      <p>
+        Para a equipe saber quantas pessoas estão no site em cada momento, o
+        navegador informa de forma <strong>anônima</strong> apenas a área do
+        site em que você está (por exemplo, &ldquo;catálogo&rdquo; ou
+        &ldquo;carrinho&rdquo;). Essa informação não contém nome, e-mail ou
+        qualquer identificador seu e não é gravada: ela some assim que você
+        fecha a página.
+      </p>
 
       <h2>5. Por quanto tempo guardamos seus dados</h2>
       <p>
