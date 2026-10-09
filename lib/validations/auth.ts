@@ -23,3 +23,12 @@ export const signupSchema = z
     error: "As senhas não coincidem.",
     path: ["confirmPassword"],
   });
+
+export const profileSchema = z.object({
+  fullName: z.string().trim().min(2, { error: "Informe seu nome completo." }).max(100),
+  nickname: z
+    .string()
+    .trim()
+    .max(30, { error: "O apelido deve ter no máximo 30 caracteres." })
+    .optional(),
+});

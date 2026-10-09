@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { logout } from "@/lib/auth/actions";
+import { getDisplayName } from "@/lib/auth/display-name";
 import type { CurrentUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils/cn";
 
@@ -27,7 +28,7 @@ const itemClass =
 export function UserMenu({ user }: { user: CurrentUser }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const firstName = user.fullName?.split(" ")[0] ?? "Conta";
+  const displayName = getDisplayName(user);
 
   useEffect(() => {
     if (!open) return;
@@ -55,7 +56,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
         className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-plum-soft transition-colors hover:bg-rose-light/50 hover:text-rose-dark"
       >
         <User className="h-5 w-5" aria-hidden="true" />
-        {firstName}
+        {displayName}
         <ChevronDown
           className={cn("h-4 w-4 transition-transform", open && "rotate-180")}
           aria-hidden="true"
@@ -69,7 +70,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
         >
           <div className="px-3 pb-2 pt-1">
             <p className="truncate text-sm font-semibold text-plum">
-              {user.fullName ?? "Minha conta"}
+              {user.role === "admin" ? displayName : (user.fullName ?? displayName)}
             </p>
             <p className="truncate text-xs text-plum-soft">{user.email}</p>
             {user.role === "admin" && (

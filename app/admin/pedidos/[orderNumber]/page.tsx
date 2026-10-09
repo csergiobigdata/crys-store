@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cancelOrderAction, markOrderShippedAction } from "@/lib/admin/order-actions";
+import { CancelOrderForm } from "@/components/admin/orders/cancel-order-form";
+import { markOrderShippedAction } from "@/lib/admin/order-actions";
 import { refundCardPaymentAction } from "@/lib/admin/mercadopago-actions";
 import { confirmPixPaymentAction, rejectPixPaymentAction } from "@/lib/admin/pix-actions";
 import { orderStatusLabels } from "@/lib/orders/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { formatCep, formatCurrency } from "@/lib/utils/format";
+import { formatCep, formatCurrency, formatDateTimeSeconds } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Detalhe do pedido — Admin" };
 
@@ -273,28 +274,40 @@ export default async function AdminOrderDetailPage({
         <section className="mt-6 rounded-2xl border border-error/30 bg-error-light/40 p-6">
           <h2 className="font-display text-lg text-plum">Cancelar pedido</h2>
           <p className="mt-2 text-sm text-plum-soft">
-            Libera o estoque reservado e marca o pedido como cancelado. Essa
-            ação não pode ser desfeita.
+            Libera o estoque reservado e marca o pedido como cancelado. O seu nome, a
+            data e a hora ficam registrados. Essa ação não pode ser desfeita.
           </p>
-          <form
-            action={async (formData: FormData) => {
-              "use server";
-              await cancelOrderAction(order.id, formData);
-            }}
-            className="mt-4 flex flex-wrap gap-2"
-          >
-            <input
-              name="note"
-              placeholder="Motivo do cancelamento (opcional)"
-              className="flex-1 rounded-lg border border-rose/30 px-3 py-2 text-sm"
-            />
-            <button
-              type="submit"
-              className="rounded-full border border-error px-5 py-2.5 text-sm font-medium text-error hover:bg-error-light"
-            >
-              Cancelar pedido
-            </button>
-          </form>
+          <CancelOrderForm
+            orderId={order.id}
+            orderNumber={order.order_number}
+            alreadyPaid={["pago", "em_separacao"].includes(order.status)}
+          />
+        </section>
+      )}
+
+      {order.status === "cancelado" && order.cancelled_at && (
+        <section className="mt-6 rounded-2xl border border-error/30 bg-error-light/40 p-6">
+          <h2 className="font-display text-lg text-plum">Pedido cancelado</h2>
+          <dl className="mt-3 space-y-1 text-sm text-plum-soft">
+            <div className="flex gap-2">
+              <dt className="font-medium text-plum">Cancelado por:</dt>
+              <dd>{order.cancelled_by_name ?? "—"}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-medium text-plum">Data e hora:</dt>
+              <dd>{formatDateTimeSeconds(order.cancelled_at)}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-medium text-plum">Justificativa:</dt>
+              <dd>{order.cancellation_reason ?? "—"}</dd>
+            </div>
+            {order.cancellation_note && (
+              <div className="flex gap-2">
+                <dt className="font-medium text-plum">Observação:</dt>
+                <dd>{order.cancellation_note}</dd>
+              </div>
+            )}
+          </dl>
         </section>
       )}
     </div>

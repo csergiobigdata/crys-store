@@ -20,3 +20,13 @@ describe("formatCep", () => {
     expect(formatCep("123")).toBe("123");
   });
 });
+
+describe("formatDateTimeSeconds", () => {
+  it("formata em dd/mm/aaaa hh:mm:ss no horário de Brasília", async () => {
+    const { formatDateTimeSeconds } = await import("@/lib/utils/format");
+    // 2026-10-09 08:05:03 UTC = 05:05:03 em Brasília (UTC-3)
+    expect(formatDateTimeSeconds("2026-10-09T08:05:03Z")).toBe("09/10/2026 05:05:03");
+    // meia-noite em 24h deve ser 00, não 24
+    expect(formatDateTimeSeconds("2026-10-09T03:00:00Z")).toBe("09/10/2026 00:00:00");
+  });
+});

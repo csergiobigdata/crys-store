@@ -3,22 +3,38 @@
 import { revalidatePath } from "next/cache";
 import { getOrderContactEmail } from "@/lib/admin/order-contact";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { getCancellationReasonLabel } from "@/lib/orders/cancellation-reasons";
 import { sendOrderShippedEmail } from "@/lib/email/notify-customer";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function cancelOrderAction(orderId: string, formData: FormData) {
+export async function cancelOrderAction(
+  orderId: string,
+  input: { reason: string; note?: string },
+): Promise<{ error?: string; success?: boolean }> {
   const admin = await requireAdmin();
-  const note = String(formData.get("note") ?? "");
-  const supabase = createAdminClient();
+  const reasonLabel = getCancellationReasonLabel(input.reason);
+  const note = (input.note ?? "").trim();
 
+  if (!reasonLabel) {
+    return { error: "Selecione a justificativa do cancelamento." };
+  }
+  if (input.reason === "outro" && !note) {
+    return { error: "Descreva o motivo do cancelamento." };
+  }
+  if (note.length > 500) {
+    return { error: "A observação deve ter no máximo 500 caracteres." };
+  }
+
+  const supabase = createAdminClient();
   const { data: ok } = await supabase.rpc("admin_cancel_order", {
     p_order_id: orderId,
     p_admin_id: admin.id,
+    p_reason: reasonLabel,
     p_note: note || null,
   });
 
   if (!ok) {
-    return { error: "Não foi possível cancelar este pedido." };
+    return { error: "Não foi possível cancelar este pedido (o status dele pode ter mudado)." };
   }
 
   await supabase.from("audit_log").insert({
@@ -26,10 +42,15 @@ export async function cancelOrderAction(orderId: string, formData: FormData) {
     entity_type: "order",
     entity_id: orderId,
     action: "cancel_order",
-    changes: { note },
+    changes: { reason: reasonLabel, note: note || null },
   });
 
+  const contact = await getOrderContactEmail(orderId);
   revalidatePath("/admin/pedidos");
+  if (contact) {
+    revalidatePath(`/admin/pedidos/${contact.orderNumber}`);
+    revalidatePath(`/pedidos/${contact.orderNumber}`);
+  }
   return { success: true };
 }
 

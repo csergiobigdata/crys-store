@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DeliveryForm } from "@/components/account/delivery-form";
+import { ProfileForm } from "@/components/account/profile-form";
 import { DeleteAccountForm } from "@/components/auth/delete-account-form";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/lib/auth/actions";
@@ -24,13 +25,18 @@ export default async function MyAccountPage() {
         Minha conta
       </h1>
       <p className="mt-2 text-plum-soft">
-        Olá, {user.fullName ?? user.email}.
+        Olá, {user.nickname ?? user.fullName ?? user.email}.
       </p>
 
       <div className="mt-8 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
         <p className="text-sm text-plum-soft">E-mail</p>
         <p className="font-medium text-plum">{user.email}</p>
       </div>
+
+      <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
+        <h2 className="font-display text-xl text-plum">Seus dados</h2>
+        <ProfileForm fullName={user.fullName} nickname={user.nickname} />
+      </section>
 
       <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
         <h2 className="font-display text-xl text-plum">Dados de entrega</h2>
