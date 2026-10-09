@@ -7,6 +7,9 @@
  * sistema, então não há bloco @media (prefers-color-scheme: dark) aqui.
  */
 :root {
+  /* Impede o modo escuro automático dos navegadores de celular. */
+  color-scheme: only light;
+
   --color-plum: #3d1a2e;
   --color-plum-soft: #7a5568;
 

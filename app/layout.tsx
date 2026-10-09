@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { Footer } from "@/components/layout/footer";
@@ -18,6 +18,12 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
+
+// A loja tem uma única paleta (clara). "only light" avisa o navegador do celular
+// para NÃO escurecer as cores automaticamente (modo escuro forçado em sites).
+export const viewport: Viewport = {
+  colorScheme: "only light",
+};
 
 export const metadata: Metadata = {
   title: {

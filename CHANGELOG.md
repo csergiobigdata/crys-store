@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- Celulares: a loja declara tema claro único (`color-scheme: only light`), para o navegador não
+  escurecer as cores automaticamente.
+
 ## 1.1.0
 
 - Painel: contador **"Online agora"** na Visão geral (Supabase Realtime), anônimo, com a
