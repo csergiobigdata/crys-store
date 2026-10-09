@@ -4,6 +4,10 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { sendContactMessage } from "@/lib/site/contact-actions";
 import { MAX_CONTACT_MESSAGE_LENGTH } from "@/lib/validations/contact";
+import {
+  containsOffensiveLanguage,
+  OFFENSIVE_LANGUAGE_MESSAGE,
+} from "@/lib/validations/profanity";
 
 const inputClass =
   "mt-1.5 w-full rounded-lg border border-rose/30 bg-surface px-4 py-2.5 text-sm text-plum outline-none focus:border-rose focus:ring-2 focus:ring-rose-light";
@@ -18,7 +22,8 @@ export function ContactForm({
   defaultPhone: string;
 }) {
   const [state, formAction, pending] = useActionState(sendContactMessage, undefined);
-  const [length, setLength] = useState(0);
+  const [message, setMessage] = useState("");
+  const offensive = containsOffensiveLanguage(message);
 
   if (state?.sent) {
     return (
@@ -98,13 +103,20 @@ export function ContactForm({
           rows={6}
           minLength={10}
           maxLength={MAX_CONTACT_MESSAGE_LENGTH}
-          onChange={(event) => setLength(event.target.value.length)}
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          aria-invalid={offensive}
           placeholder="Escreva aqui a sua dúvida, sugestão ou elogio. Se for sobre um pedido, informe o número dele."
           className={inputClass}
         />
         <p className="mt-1 text-right text-xs text-plum-soft">
-          {length}/{MAX_CONTACT_MESSAGE_LENGTH}
+          {message.length}/{MAX_CONTACT_MESSAGE_LENGTH}
         </p>
+        {offensive && (
+          <p className="mt-1 rounded-lg bg-error-light px-3 py-2 text-sm text-error" role="alert">
+            {OFFENSIVE_LANGUAGE_MESSAGE}
+          </p>
+        )}
       </div>
 
       {state?.error && (
@@ -113,7 +125,7 @@ export function ContactForm({
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending || offensive}>
         {pending ? "Enviando..." : "Enviar mensagem"}
       </Button>
     </form>

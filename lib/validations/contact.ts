@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  containsOffensiveLanguage,
+  OFFENSIVE_LANGUAGE_MESSAGE,
+} from "@/lib/validations/profanity";
 
 export const MAX_CONTACT_MESSAGE_LENGTH = 2000;
 
@@ -17,6 +21,9 @@ export const contactSchema = z.object({
     .min(10, { error: "Escreva uma mensagem com pelo menos 10 caracteres." })
     .max(MAX_CONTACT_MESSAGE_LENGTH, {
       error: `A mensagem pode ter no máximo ${MAX_CONTACT_MESSAGE_LENGTH} caracteres.`,
+    })
+    .refine((value) => !containsOffensiveLanguage(value), {
+      message: OFFENSIVE_LANGUAGE_MESSAGE,
     }),
 });
 

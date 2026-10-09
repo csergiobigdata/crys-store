@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+- Fale Conosco: filtro de palavrões e ofensas na mensagem (aviso na hora, envio bloqueado no
+  navegador e conferido de novo no servidor).
+
 ## 1.1.2
 
 - Fale Conosco: um e-mail por administrador (se o provedor recusar um endereço, os outros ainda
