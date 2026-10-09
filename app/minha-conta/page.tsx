@@ -35,7 +35,12 @@ export default async function MyAccountPage() {
 
       <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
         <h2 className="font-display text-xl text-plum">Seus dados</h2>
-        <ProfileForm fullName={user.fullName} nickname={user.nickname} />
+        <ProfileForm
+          fullName={user.fullName}
+          nickname={user.nickname}
+          phone={user.phone}
+          isAdmin={user.role === "admin"}
+        />
       </section>
 
       <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">

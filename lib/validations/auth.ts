@@ -31,4 +31,13 @@ export const profileSchema = z.object({
     .trim()
     .max(30, { error: "O apelido deve ter no máximo 30 caracteres." })
     .optional(),
+  // Telefone de contato com DDD (só dígitos são guardados). Em branco = não informado.
+  phone: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "") : ""))
+    .refine((value) => value === "" || value.length === 10 || value.length === 11, {
+      message: "Informe o telefone com DDD (10 ou 11 dígitos).",
+    }),
 });

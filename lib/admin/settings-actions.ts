@@ -24,7 +24,6 @@ export async function updateGeneralSettingsAction(
     companyRazaoSocial: formData.get("companyRazaoSocial"),
     companyCnpjOuCpf: formData.get("companyCnpjOuCpf"),
     companyEndereco: formData.get("companyEndereco"),
-    companyContato: formData.get("companyContato"),
   });
 
   if (!parsed.success) {
@@ -36,7 +35,6 @@ export async function updateGeneralSettingsAction(
     razao_social: parsed.data.companyRazaoSocial,
     cnpj_ou_cpf: parsed.data.companyCnpjOuCpf,
     endereco: parsed.data.companyEndereco,
-    contato: parsed.data.companyContato,
   };
 
   await supabase.from("app_settings").upsert([

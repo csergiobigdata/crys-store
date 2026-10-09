@@ -8,7 +8,6 @@ type CompanyInfo = {
   razao_social?: string;
   cnpj_ou_cpf?: string;
   endereco?: string;
-  contato?: string;
 };
 
 export function GeneralSettingsForm({
@@ -137,15 +136,11 @@ export function GeneralSettingsForm({
               className="mt-1 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
             />
           </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs text-plum-soft">Contato</label>
-            <input
-              name="companyContato"
-              required
-              defaultValue={companyInfo.contato ?? ""}
-              className="mt-1 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
-            />
-          </div>
+          <p className="rounded-lg bg-sky-light px-3 py-2 text-xs text-sky-dark sm:col-span-2">
+            O contato de atendimento (e-mail e telefone) mostrado no site vem do{" "}
+            <strong>administrador principal</strong>. Para alterá-lo, o administrador principal
+            atualiza o telefone em <strong>Minha conta → Seus dados</strong>.
+          </p>
         </div>
       </div>
 

@@ -18,3 +18,14 @@ export async function requireAdmin() {
 
   return user;
 }
+
+/** Ações que só o administrador principal faz (ex.: gerenciar os administradores). */
+export async function requirePrimaryAdmin() {
+  const user = await requireAdmin();
+
+  if (!user.isPrimaryAdmin) {
+    redirect("/admin");
+  }
+
+  return user;
+}

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { AboutDialog } from "@/components/layout/about-dialog";
 import { Logo } from "@/components/ui/logo";
 import { getCompanyInfo } from "@/lib/legal/company-info";
+import { getPrimaryAdminContact } from "@/lib/site/contact";
 
 const legalLinks = [
   { href: "/termos-de-uso", label: "Termos de Uso" },
@@ -16,9 +18,9 @@ const legalLinks = [
  * virtual): enquanto esses campos estiverem vazios, nenhuma página os mostra.
  */
 export async function Footer() {
-  const company = await getCompanyInfo();
+  const [company, primaryAdmin] = await Promise.all([getCompanyInfo(), getPrimaryAdminContact()]);
   const razaoSocial = company.razao_social || "[REVISAR] razão social não configurada";
-  const contato = company.contato || "[REVISAR] contato não configurado";
+  const version = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0";
 
   return (
     <footer className="mt-24 bg-gradient-to-br from-rose-dark to-rose text-white/90">
@@ -42,13 +44,35 @@ export async function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <AboutDialog
+                  email={primaryAdmin?.email ?? null}
+                  phone={primaryAdmin?.phone ?? null}
+                  version={version}
+                />
+              </li>
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-white">Atendimento</p>
             <ul className="mt-3 space-y-2 text-sm text-white/80">
-              <li>{contato}</li>
+              {primaryAdmin?.email && (
+                <li>
+                  <a href={`mailto:${primaryAdmin.email}`} className="break-all hover:text-white hover:underline">
+                    {primaryAdmin.email}
+                  </a>
+                </li>
+              )}
+              {primaryAdmin?.phone && <li>{primaryAdmin.phone}</li>}
+              {!primaryAdmin?.email && !primaryAdmin?.phone && (
+                <li>[REVISAR] contato não configurado</li>
+              )}
+              <li>
+                <Link href="/fale-conosco" className="font-medium text-white hover:underline">
+                  Fale Conosco
+                </Link>
+              </li>
             </ul>
           </div>
 

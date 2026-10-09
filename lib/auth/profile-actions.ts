@@ -22,6 +22,7 @@ export async function saveProfileAction(
   const parsed = profileSchema.safeParse({
     fullName: formData.get("fullName"),
     nickname: formData.get("nickname") ?? undefined,
+    phone: formData.get("phone") ?? undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Revise os dados do formulário." };
@@ -33,6 +34,7 @@ export async function saveProfileAction(
     .update({
       full_name: parsed.data.fullName,
       nickname: parsed.data.nickname || null,
+      phone: parsed.data.phone || null,
     })
     .eq("id", user.id);
 

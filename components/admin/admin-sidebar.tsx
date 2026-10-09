@@ -5,14 +5,22 @@ import { usePathname } from "next/navigation";
 import { adminLinks, isAdminLinkActive } from "@/components/admin/admin-links";
 import { cn } from "@/lib/utils/cn";
 
-export function AdminSidebar({ adminName }: { adminName: string }) {
+export function AdminSidebar({
+  adminName,
+  isPrimaryAdmin,
+}: {
+  adminName: string;
+  isPrimaryAdmin: boolean;
+}) {
   const pathname = usePathname();
 
   return (
     <aside className="w-full flex-shrink-0 lg:w-56">
       <p className="mb-4 truncate text-sm text-plum-soft">Olá, {adminName}</p>
       <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
-        {adminLinks.map((link) => {
+        {adminLinks
+          .filter((link) => !("primaryOnly" in link && link.primaryOnly) || isPrimaryAdmin)
+          .map((link) => {
           const active = isAdminLinkActive(link.href, pathname);
 
           return (

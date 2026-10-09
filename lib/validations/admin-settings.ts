@@ -37,7 +37,6 @@ export const generalSettingsSchema = z.object({
   // Opcionais: vazio = não aparece em nenhuma página do site.
   companyCnpjOuCpf: z.string().trim().default(""),
   companyEndereco: z.string().trim().default(""),
-  companyContato: z.string().trim().min(1),
 });
 
 export const localDeliverySchema = z.object({

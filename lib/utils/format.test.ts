@@ -40,3 +40,19 @@ describe("formatDateTime e formatDate", () => {
     expect(formatDate("2026-10-09T01:00:00Z")).toBe("08/10/2026");
   });
 });
+
+describe("formatPhone", () => {
+  it("formata celular e fixo com DDD", async () => {
+    const { formatPhone } = await import("@/lib/utils/format");
+    expect(formatPhone("11986493333")).toBe("(11) 98649-3333");
+    expect(formatPhone("+55 11 98649-3333")).toBe("(11) 98649-3333");
+    expect(formatPhone("1144445555")).toBe("(11) 4444-5555");
+  });
+
+  it("vazio vira null e formatos desconhecidos ficam como estão", async () => {
+    const { formatPhone } = await import("@/lib/utils/format");
+    expect(formatPhone("")).toBeNull();
+    expect(formatPhone(null)).toBeNull();
+    expect(formatPhone("0800 123")).toBe("0800 123");
+  });
+});

@@ -10,9 +10,13 @@ const inputClass =
 export function ProfileForm({
   fullName,
   nickname,
+  phone,
+  isAdmin = false,
 }: {
   fullName: string | null;
   nickname: string | null;
+  phone: string | null;
+  isAdmin?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(saveProfileAction, undefined);
 
@@ -46,6 +50,27 @@ export function ProfileForm({
         <p className="mt-1 text-xs text-plum-soft">
           Aparece no menu da sua conta. Deixe em branco para usar o seu primeiro nome.
         </p>
+      </div>
+
+      <div>
+        <label htmlFor="profile-phone" className="block text-sm font-medium text-plum">
+          Telefone de contato (com DDD)
+        </label>
+        <input
+          id="profile-phone"
+          name="phone"
+          inputMode="tel"
+          autoComplete="tel"
+          defaultValue={phone ?? ""}
+          placeholder="(11) 98765-4321"
+          className={inputClass}
+        />
+        {isAdmin && (
+          <p className="mt-1 text-xs text-plum-soft">
+            Se você for o administrador principal, este telefone e o seu e-mail aparecem no
+            rodapé e na janela &ldquo;Sobre&rdquo; do site.
+          </p>
+        )}
       </div>
 
       {state?.error && (

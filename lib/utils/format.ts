@@ -54,3 +54,13 @@ export function formatDateTime(value: string | Date): string {
 export function formatDate(value: string | Date): string {
   return dateFormatter.format(new Date(value));
 }
+
+/** Telefone com DDD em dígitos -> "(11) 98649-3333". Outros formatos ficam como estão. */
+export function formatPhone(phone: string | null | undefined): string | null {
+  const raw = phone?.trim();
+  if (!raw) return null;
+  const digits = raw.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return raw;
+}
