@@ -5,7 +5,7 @@ import { ProductFilters } from "@/components/admin/products/product-filters";
 import { ButtonLink } from "@/components/ui/button";
 import { deleteProductAction } from "@/lib/admin/product-actions";
 import { createClient } from "@/lib/supabase/server";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Produtos — Admin" };
 
@@ -140,7 +140,7 @@ export default async function AdminProductsPage({
                   </span>
                   {product.status === "I" && product.inactivated_at && (
                     <p className="mt-1 text-xs text-plum-soft">
-                      desde {new Date(product.inactivated_at).toLocaleDateString("pt-BR")}
+                      desde {formatDate(product.inactivated_at)}
                     </p>
                   )}
                 </td>

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
 import { orderStatusLabels } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/server";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Meus pedidos" };
 
@@ -40,7 +40,7 @@ export default async function MyOrdersPage() {
                 </Link>
                 <p className="text-sm text-plum-soft">
                   {orderStatusLabels[order.status] ?? order.status} ·{" "}
-                  {new Date(order.created_at).toLocaleDateString("pt-BR")}
+                  {formatDate(order.created_at)}
                 </p>
               </div>
               <p className="font-medium text-plum">{formatCurrency(Number(order.total))}</p>

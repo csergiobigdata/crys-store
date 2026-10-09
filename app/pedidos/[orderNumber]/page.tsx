@@ -9,7 +9,7 @@ import { getOrderForViewing } from "@/lib/orders/get-order";
 import { orderStatusLabels, orderStatusTone } from "@/lib/orders/status";
 import { renderPixQrCode } from "@/lib/pix/qrcode";
 import { cn } from "@/lib/utils/cn";
-import { formatCep, formatCurrency } from "@/lib/utils/format";
+import { formatCep, formatCurrency, formatDateTime } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Seu pedido" };
 
@@ -146,7 +146,7 @@ export default async function OrderPage({
             totalFormatted={formatCurrency(Number(order.total))}
             expiresAtFormatted={
               order.pix_expires_at
-                ? new Date(order.pix_expires_at).toLocaleString("pt-BR")
+                ? formatDateTime(order.pix_expires_at)
                 : ""
             }
             reviewStatus={order.pix_payment!.review_status}

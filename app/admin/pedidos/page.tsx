@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { orderStatusLabels } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/server";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDateTime } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Pedidos — Admin" };
 
@@ -98,7 +98,7 @@ export default async function AdminOrdersPage({
                     {order.order_number}
                   </Link>
                   <p className="text-xs text-plum-soft">
-                    {new Date(order.created_at).toLocaleString("pt-BR")}
+                    {formatDateTime(order.created_at)}
                   </p>
                 </td>
                 <td className="p-4 text-plum-soft">

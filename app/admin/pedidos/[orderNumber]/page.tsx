@@ -7,7 +7,7 @@ import { confirmPixPaymentAction, rejectPixPaymentAction } from "@/lib/admin/pix
 import { orderStatusLabels } from "@/lib/orders/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { formatCep, formatCurrency, formatDateTimeSeconds } from "@/lib/utils/format";
+import { formatCep, formatCurrency, formatDateTimeSeconds, formatDateTime } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Detalhe do pedido — Admin" };
 
@@ -203,7 +203,7 @@ export default async function AdminOrderDetailPage({
                   </p>
                   <p className="text-xs text-plum-soft">
                     ID Mercado Pago: {payment.mp_payment_id ?? "—"} ·{" "}
-                    {new Date(payment.created_at).toLocaleString("pt-BR")}
+                    {formatDateTime(payment.created_at)}
                   </p>
                 </li>
               ))}

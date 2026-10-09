@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { formatDateTime } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Auditoria — Admin" };
 
@@ -90,7 +91,7 @@ export default async function AdminAuditLogPage({
             {(logs ?? []).map((log) => (
               <tr key={log.id}>
                 <td className="whitespace-nowrap p-4 text-plum-soft">
-                  {new Date(log.created_at).toLocaleString("pt-BR")}
+                  {formatDateTime(log.created_at)}
                 </td>
                 <td className="p-4 text-plum-soft">
                   {log.actor?.full_name ?? "Sistema"}

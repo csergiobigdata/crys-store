@@ -30,3 +30,13 @@ describe("formatDateTimeSeconds", () => {
     expect(formatDateTimeSeconds("2026-10-09T03:00:00Z")).toBe("09/10/2026 00:00:00");
   });
 });
+
+describe("formatDateTime e formatDate", () => {
+  it("usam o horário de Brasília, não o do servidor (UTC)", async () => {
+    const { formatDate, formatDateTime } = await import("@/lib/utils/format");
+    // 05:10 UTC = 02:10 em Brasília
+    expect(formatDateTime("2026-10-09T05:10:35Z")).toBe("09/10/2026 02:10");
+    // 01:00 UTC ainda é o dia anterior em Brasília
+    expect(formatDate("2026-10-09T01:00:00Z")).toBe("08/10/2026");
+  });
+});

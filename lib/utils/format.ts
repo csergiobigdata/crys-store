@@ -30,3 +30,27 @@ export function formatDateTimeSeconds(value: string | Date): string {
     parts.find((part) => part.type === type)?.value ?? "";
   return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
 }
+
+const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  dateStyle: "short",
+  timeStyle: "short",
+});
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Sao_Paulo",
+  dateStyle: "short",
+});
+
+/**
+ * Data e hora (dd/mm/aaaa hh:mm) sempre em horário de Brasília. Sem o fuso
+ * explícito, páginas renderizadas no servidor (que roda em UTC) mostrariam
+ * horários 3 horas adiantados.
+ */
+export function formatDateTime(value: string | Date): string {
+  return dateTimeFormatter.format(new Date(value)).replace(", ", " ");
+}
+
+/** Data (dd/mm/aaaa) em horário de Brasília. */
+export function formatDate(value: string | Date): string {
+  return dateFormatter.format(new Date(value));
+}

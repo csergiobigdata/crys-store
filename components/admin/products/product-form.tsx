@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { upsertProductAction } from "@/lib/admin/product-actions";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils/format";
 
 type Category = { id: string; name: string };
 
@@ -124,7 +125,7 @@ export function ProductForm({
           {initial.status === "I" && initial.inactivated_at && (
             <p className="mt-1 text-xs text-plum-soft">
               Inativado em{" "}
-              {new Date(initial.inactivated_at).toLocaleDateString("pt-BR")}.
+              {formatDate(initial.inactivated_at)}.
             </p>
           )}
         </div>
