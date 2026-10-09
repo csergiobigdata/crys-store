@@ -8,6 +8,16 @@ export const metadata: Metadata = { title: "Pedidos — Admin" };
 
 const statusOptions = Object.entries(orderStatusLabels);
 
+// Mesmos status em que o pedido ainda pode ser cancelado (ver admin_cancel_order).
+const cancellableStatuses = [
+  "criado",
+  "aguardando_pagamento",
+  "em_analise",
+  "pago",
+  "em_separacao",
+  "pagamento_recusado",
+];
+
 export default async function AdminOrdersPage({
   searchParams,
 }: {
@@ -74,6 +84,7 @@ export default async function AdminOrdersPage({
               <th className="p-4">Pagamento</th>
               <th className="p-4">Status</th>
               <th className="p-4">Total</th>
+              <th className="p-4">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-rose-light">
@@ -101,6 +112,25 @@ export default async function AdminOrdersPage({
                 </td>
                 <td className="p-4 font-medium text-plum">
                   {formatCurrency(Number(order.total))}
+                </td>
+                <td className="whitespace-nowrap p-4">
+                  <Link
+                    href={`/admin/pedidos/${order.order_number}`}
+                    className="font-medium text-rose-dark hover:underline"
+                  >
+                    Detalhes
+                  </Link>
+                  {cancellableStatuses.includes(order.status) && (
+                    <>
+                      {" · "}
+                      <Link
+                        href={`/admin/pedidos/${order.order_number}#cancelar`}
+                        className="font-medium text-error hover:underline"
+                      >
+                        Cancelar
+                      </Link>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

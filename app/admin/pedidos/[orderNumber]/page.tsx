@@ -271,7 +271,10 @@ export default async function AdminOrderDetailPage({
       </section>
 
       {canCancel && (
-        <section className="mt-6 rounded-2xl border border-error/30 bg-error-light/40 p-6">
+        <section
+          id="cancelar"
+          className="mt-6 scroll-mt-24 rounded-2xl border border-error/30 bg-error-light/40 p-6"
+        >
           <h2 className="font-display text-lg text-plum">Cancelar pedido</h2>
           <p className="mt-2 text-sm text-plum-soft">
             Libera o estoque reservado e marca o pedido como cancelado. O seu nome, a
