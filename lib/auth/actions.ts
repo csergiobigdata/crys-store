@@ -119,6 +119,7 @@ export async function signup(
   });
 
   if (error) {
+    console.error("Falha no cadastro (signUp):", error.code, error.message);
     return {
       error:
         error.code === "user_already_exists"
