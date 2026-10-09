@@ -15,6 +15,7 @@ export async function upsertCouponAction(
   const admin = await requireAdmin();
 
   const parsed = couponSchema.safeParse({
+    name: formData.get("name"),
     code: formData.get("code"),
     discountType: formData.get("discountType"),
     discountValue: formData.get("discountValue"),
@@ -31,6 +32,7 @@ export async function upsertCouponAction(
 
   const supabase = createAdminClient();
   const payload = {
+    name: parsed.data.name,
     code: parsed.data.code,
     discount_type: parsed.data.discountType,
     discount_value: parsed.data.discountValue,

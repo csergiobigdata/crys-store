@@ -3,9 +3,11 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { upsertCouponAction } from "@/lib/admin/coupon-actions";
+import { MAX_COUPON_NAME_LENGTH, MAX_DISCOUNT_PERCENT } from "@/lib/orders/coupon-rules";
 
 type Coupon = {
   id: string;
+  name: string | null;
   code: string;
   discount_type: "percentual" | "fixo";
   discount_value: number;
@@ -30,6 +32,36 @@ export function CouponForm({ coupon }: { coupon: Coupon | null }) {
 
   return (
     <form action={formAction} className="space-y-4">
+      <div
+        role="note"
+        className="rounded-xl border-2 border-rose bg-rose-light/50 px-4 py-3 text-sm text-plum"
+      >
+        <p className="font-semibold text-rose-dark">Limite de desconto: {MAX_DISCOUNT_PERCENT}%</p>
+        <p className="mt-1">
+          Nenhum desconto pode passar de {MAX_DISCOUNT_PERCENT}% do valor total dos produtos do
+          pedido (o frete não entra na conta). O cupom percentual aceita no máximo{" "}
+          {MAX_DISCOUNT_PERCENT}%. O cupom de valor fixo é reduzido automaticamente ao teto de{" "}
+          {MAX_DISCOUNT_PERCENT}% do pedido.
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-plum">
+          Nome do cupom (apelido, até {MAX_COUPON_NAME_LENGTH} caracteres)
+        </label>
+        <input
+          name="name"
+          required
+          maxLength={MAX_COUPON_NAME_LENGTH}
+          defaultValue={coupon?.name ?? ""}
+          placeholder="Natal"
+          className="mt-1.5 w-full max-w-xs rounded-lg border border-rose/30 px-3 py-2 text-sm"
+        />
+        <p className="mt-1 text-xs text-plum-soft">
+          Serve para você identificar o cupom no painel. O cliente digita o código abaixo.
+        </p>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-plum">Código</label>
@@ -56,7 +88,9 @@ export function CouponForm({ coupon }: { coupon: Coupon | null }) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-plum">Valor do desconto</label>
+          <label className="block text-sm font-medium text-plum">
+            Valor do desconto (% até {MAX_DISCOUNT_PERCENT}, ou R$ — limitado a {MAX_DISCOUNT_PERCENT}% do pedido)
+          </label>
           <input
             name="discountValue"
             type="number"

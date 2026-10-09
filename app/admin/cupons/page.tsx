@@ -10,7 +10,7 @@ export default async function AdminCouponsPage() {
   const supabase = await createClient();
   const { data: coupons } = await supabase
     .from("coupons")
-    .select("id, code, discount_type, discount_value, usage_count, usage_limit, active")
+    .select("id, name, code, discount_type, discount_value, usage_count, usage_limit, active")
     .order("code");
 
   return (
@@ -24,6 +24,7 @@ export default async function AdminCouponsPage() {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-rose-light text-plum-soft">
             <tr>
+              <th className="p-4">Nome</th>
               <th className="p-4">Código</th>
               <th className="p-4">Desconto</th>
               <th className="p-4">Uso</th>
@@ -34,6 +35,7 @@ export default async function AdminCouponsPage() {
           <tbody className="divide-y divide-rose-light">
             {(coupons ?? []).map((coupon) => (
               <tr key={coupon.id}>
+                <td className="p-4 text-plum">{coupon.name ?? "—"}</td>
                 <td className="p-4 font-medium text-plum">{coupon.code}</td>
                 <td className="p-4 text-plum-soft">
                   {coupon.discount_type === "percentual"

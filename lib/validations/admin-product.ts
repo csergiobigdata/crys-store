@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_COUPON_NAME_LENGTH, MAX_DISCOUNT_PERCENT } from "@/lib/orders/coupon-rules";
 
 // FormData.get() devolve null quando o campo não veio no formulário (ex.: a
 // linha de variação só tem "Atributo 1"); o zod trataria null como erro.
@@ -58,6 +59,13 @@ export const categorySchema = z.object({
 });
 
 export const couponSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: "Informe o nome (apelido) do cupom." })
+    .max(MAX_COUPON_NAME_LENGTH, {
+      error: `O nome do cupom pode ter no máximo ${MAX_COUPON_NAME_LENGTH} caracteres.`,
+    }),
   code: z
     .string()
     .trim()
@@ -76,4 +84,12 @@ export const couponSchema = z.object({
     .optional()
     .transform((v) => (v && v.trim() ? v.trim() : undefined)),
   active: z.coerce.boolean(),
+}).superRefine((coupon, ctx) => {
+  if (coupon.discountType === "percentual" && coupon.discountValue > MAX_DISCOUNT_PERCENT) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["discountValue"],
+      message: `O desconto percentual não pode passar de ${MAX_DISCOUNT_PERCENT}%.`,
+    });
+  }
 });
