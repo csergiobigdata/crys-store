@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+- Fale Conosco: um e-mail por administrador (se o provedor recusar um endereço, os outros ainda
+  recebem) e o painel de Mensagens mostra para quem foi enviado ou o motivo da falha.
+
 ## 1.1.1
 
 - Celulares: a loja declara tema claro único (`color-scheme: only light`), para o navegador não

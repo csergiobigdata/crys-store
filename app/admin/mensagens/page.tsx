@@ -73,11 +73,25 @@ export default async function AdminMessagesPage() {
 
             <p className="mt-3 whitespace-pre-wrap text-sm text-plum">{message.message}</p>
 
-            {message.email_error && (
-              <p className="mt-3 rounded-lg bg-error-light px-3 py-2 text-xs text-error">
-                O e-mail aos administradores não foi entregue ({message.email_error}). A mensagem
-                está salva aqui.
+            {message.emailed_to && message.emailed_to.length > 0 && (
+              <p className="mt-3 text-xs text-plum-soft">
+                E-mail enviado para: {message.emailed_to.join(", ")}.
               </p>
+            )}
+            {message.email_error && (
+              <div className="mt-3 rounded-lg bg-error-light px-3 py-2 text-xs text-error">
+                <p>
+                  O e-mail não chegou a todos os administradores. A mensagem está salva aqui.
+                </p>
+                <p className="mt-1 break-words opacity-90">Motivo: {message.email_error}</p>
+                {/testing emails|own email|verify a domain|domain/i.test(message.email_error) && (
+                  <p className="mt-1 font-medium">
+                    Isso acontece porque o serviço de e-mail está em modo de teste: ele só entrega
+                    para o e-mail dono da conta Resend. Para todos receberem, verifique um domínio
+                    próprio no Resend e defina EMAIL_FROM na Vercel.
+                  </p>
+                )}
+              </div>
             )}
 
             <div className="mt-4 flex items-center gap-4 text-sm font-medium">

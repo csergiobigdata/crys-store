@@ -65,7 +65,7 @@ export async function sendContactMessage(
   }
 
   const recipients = await getAllAdminEmails();
-  const emailError = await sendContactMessageEmail({
+  const delivery = await sendContactMessageEmail({
     to: recipients,
     name: parsed.data.name,
     email: parsed.data.email,
@@ -75,7 +75,10 @@ export async function sendContactMessage(
 
   await supabase
     .from("contact_messages")
-    .update({ emailed_to: emailError ? null : recipients, email_error: emailError })
+    .update({
+      emailed_to: delivery.sent.length > 0 ? delivery.sent : null,
+      email_error: delivery.failures.length > 0 ? delivery.failures.join(" | ") : null,
+    })
     .eq("id", saved.id);
 
   // A mensagem está gravada e aparece no painel mesmo que o e-mail tenha falhado.
