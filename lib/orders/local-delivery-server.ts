@@ -1,5 +1,5 @@
 import "server-only";
-import { geocodeCep } from "@/lib/orders/geocode";
+import { type AddressHint, geocodeAddress } from "@/lib/orders/geocode";
 import {
   DEFAULT_LOCAL_DELIVERY,
   haversineKm,
@@ -39,12 +39,13 @@ export async function getLocalDeliveryConfig(): Promise<LocalDeliveryConfig> {
 export async function resolveLocalDeliveryInputs(
   destinationCep: string,
   needed: boolean,
+  address?: AddressHint,
 ): Promise<LocalDeliveryInputs> {
   const config = await getLocalDeliveryConfig();
 
   let distanceKm: number | null = null;
   if (needed) {
-    const destination = await geocodeCep(destinationCep);
+    const destination = await geocodeAddress(destinationCep, address);
     if (destination) {
       distanceKm = haversineKm({ lat: config.originLat, lng: config.originLng }, destination);
     }

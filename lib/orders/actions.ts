@@ -58,6 +58,13 @@ export async function getCepQuote(
   const localDelivery = await resolveLocalDeliveryInputs(
     digits,
     hasTestProduct || resolveZone(digits, city)?.zone === "same_city",
+    lookup.status === "ok"
+      ? {
+          street: lookup.address.street,
+          city: lookup.address.city,
+          state: lookup.address.state,
+        }
+      : undefined,
   );
   const quote = getShippingOptions({
     cep: digits,
@@ -148,6 +155,7 @@ export async function createOrder(
   const localDelivery = await resolveLocalDeliveryInputs(
     data.cep,
     hasTestProduct || resolveZone(data.cep, shippingCity)?.zone === "same_city",
+    { street: data.street, city: shippingCity, state: data.state },
   );
   const quote = getShippingOptions({
     cep: data.cep,
