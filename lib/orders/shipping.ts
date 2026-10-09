@@ -314,7 +314,7 @@ export function getShippingOptions(params: {
     const km = local.distanceKm === null ? null : Math.round(local.distanceKm * 10) / 10;
     options.push({
       id: "local_arranged",
-      label: "Entrega local (mesmo dia / dia seguinte), a combinar com a loja",
+      label: "Entrega local - A combinar com a loja (mesmo dia / dia seguinte)",
       description:
         km === null
           ? "A loja entra em contato para combinar a entrega. Taxa conforme a distância."
@@ -325,7 +325,7 @@ export function getShippingOptions(params: {
   } else if (params.hasTestProduct) {
     options.push({
       id: "local_arranged",
-      label: "Entrega local (mesmo dia / dia seguinte), a combinar com a loja",
+      label: "Entrega local - A combinar com a loja (mesmo dia / dia seguinte)",
       description: "A loja entra em contato para combinar a entrega e o valor.",
       price: 0,
       deadline: "a combinar",

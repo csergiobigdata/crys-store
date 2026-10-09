@@ -127,7 +127,7 @@ describe("entrega local a combinar", () => {
     })?.options.find((o) => o.id === "local_arranged");
     expect(option?.price).toBe(30);
     expect(option?.deadline).toBe("a combinar");
-    expect(option?.label).toContain("a combinar com a loja");
+    expect(option?.label).toBe("Entrega local - A combinar com a loja (mesmo dia / dia seguinte)");
   });
 
   it("não aparece fora de Atibaia quando não há produto de teste", () => {
