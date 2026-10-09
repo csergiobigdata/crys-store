@@ -27,6 +27,8 @@ export const productSchema = z.object({
   // "A" = ativo, "I" = inativo. Produto novo sempre nasce "A" (a action ignora
   // este campo na criação).
   status: z.enum(["A", "I"]).default("A"),
+  // Checkbox: "on" quando marcado, ausente (null) quando não.
+  isTest: z.coerce.boolean().default(false),
 });
 
 export const variantSchema = z.object({

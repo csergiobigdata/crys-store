@@ -3,6 +3,7 @@
 import { Flower2, Gem, Gift, Sparkles, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { COMPACT_CATEGORY_BAR_THRESHOLD } from "@/lib/admin/category-limit";
 import { cn } from "@/lib/utils/cn";
 
 type BarCategory = { name: string; slug: string };
@@ -35,11 +36,24 @@ export function CategoryBar({ categories }: { categories: BarCategory[] }) {
 
   if (categories.length === 0) return null;
 
+  // Com mais de 3 categorias os botões ficam compactos (só ícone e nome), em
+  // linhas que quebram, para a faixa do topo não ocupar a tela inteira.
+  const compact = categories.length > COMPACT_CATEGORY_BAR_THRESHOLD;
+
   return (
     <nav
       aria-label="Categorias"
-      className="flex gap-3 overflow-x-auto px-4 pb-3 pt-3 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-6 lg:px-8"
-      style={{ gridTemplateColumns: `repeat(${Math.min(categories.length, 4)}, minmax(0, 1fr))` }}
+      className={cn(
+        "px-4 pb-3 pt-3 sm:px-6 lg:px-8",
+        compact
+          ? "flex flex-wrap justify-center gap-2"
+          : "flex gap-3 overflow-x-auto sm:grid sm:grid-cols-3 sm:overflow-visible",
+      )}
+      style={
+        compact
+          ? undefined
+          : { gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }
+      }
     >
       {categories.map((category, index) => {
         const decor = decorBySlug[category.slug];
@@ -53,36 +67,53 @@ export function CategoryBar({ categories }: { categories: BarCategory[] }) {
             href={`/catalogo?categoria=${category.slug}`}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "group relative flex min-w-[15rem] flex-1 items-center gap-3 overflow-hidden rounded-2xl px-4 py-2.5 transition-all duration-200 sm:min-w-0",
+              "group relative flex items-center overflow-hidden transition-all duration-200",
+              compact
+                ? "gap-2 rounded-full px-3 py-1.5"
+                : "min-w-[15rem] flex-1 gap-3 rounded-2xl px-4 py-2.5 sm:min-w-0",
               style.tile,
               isActive
-                ? cn("-translate-y-0.5 scale-[1.02] shadow-card-hover ring-4", style.glow)
+                ? cn(
+                    "-translate-y-0.5 shadow-card-hover",
+                    compact ? "ring-2" : "scale-[1.02] ring-4",
+                    style.glow,
+                  )
                 : "shadow-card hover:-translate-y-0.5 hover:shadow-card-hover",
               hasSelection && !isActive && "opacity-60 saturate-75 hover:opacity-100",
             )}
           >
             <span
               className={cn(
-                "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl",
+                "flex flex-shrink-0 items-center justify-center",
+                compact ? "h-6 w-6 rounded-full" : "h-9 w-9 rounded-xl",
                 style.iconWrap,
               )}
             >
-              <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+              <Icon className={compact ? "h-3.5 w-3.5" : "h-[18px] w-[18px]"} aria-hidden="true" />
             </span>
-            <span
-              aria-hidden="true"
-              className={cn(
-                "absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-white/25 transition-transform duration-500 group-hover:scale-125",
-                isActive && "scale-150 bg-white/40",
-              )}
-            />
+            {!compact && (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "absolute -bottom-6 -right-6 h-16 w-16 rounded-full bg-white/25 transition-transform duration-500 group-hover:scale-125",
+                  isActive && "scale-150 bg-white/40",
+                )}
+              />
+            )}
             <span className="relative min-w-0">
-              <span className="block truncate font-display text-base font-semibold leading-tight">
+              <span
+                className={cn(
+                  "block truncate font-display font-semibold leading-tight",
+                  compact ? "max-w-[10rem] text-sm" : "text-base",
+                )}
+              >
                 {category.name}
               </span>
-              <span className="block truncate text-xs opacity-90">
-                {decor?.description ?? "Veja os produtos"}
-              </span>
+              {!compact && (
+                <span className="block truncate text-xs opacity-90">
+                  {decor?.description ?? "Veja os produtos"}
+                </span>
+              )}
             </span>
           </Link>
         );

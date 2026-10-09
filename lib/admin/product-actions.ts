@@ -23,6 +23,7 @@ export async function upsertProductAction(
     basePrice: formData.get("basePrice"),
     categoryId: formData.get("categoryId"),
     status: formData.get("status") ?? undefined,
+    isTest: formData.get("isTest") === "on",
   });
 
   if (!parsed.success) {
@@ -36,6 +37,7 @@ export async function upsertProductAction(
     description: parsed.data.description || null,
     base_price: parsed.data.basePrice,
     category_id: parsed.data.categoryId ?? null,
+    is_test: parsed.data.isTest,
   };
 
   let id = productId;

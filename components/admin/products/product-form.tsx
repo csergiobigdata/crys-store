@@ -21,6 +21,7 @@ export function ProductForm({
     category_id: string | null;
     status: "A" | "I";
     inactivated_at: string | null;
+    is_test: boolean;
   };
 }) {
   const action = upsertProductAction.bind(null, productId);
@@ -91,6 +92,23 @@ export function ProductForm({
           </select>
         </div>
       </div>
+
+      <label className="flex items-start gap-3 rounded-lg border border-rose/30 bg-surface px-3 py-3 text-sm">
+        <input
+          type="checkbox"
+          name="isTest"
+          defaultChecked={initial?.is_test ?? false}
+          className="mt-0.5 h-4 w-4"
+        />
+        <span>
+          <span className="font-medium text-plum">Produto de teste</span>
+          <span className="mt-0.5 block text-xs text-plum-soft">
+            Marque enquanto estiver avaliando se o produto fica no catálogo ou testando o
+            aplicativo. No checkout, a compra de um produto de teste libera a opção de
+            entrega local a combinar com a loja, para qualquer endereço.
+          </span>
+        </span>
+      </label>
 
       {initial ? (
         <div>

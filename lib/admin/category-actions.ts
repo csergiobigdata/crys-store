@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { ActionState, DeleteResult } from "@/lib/admin/product-actions";
+import { MAX_CATEGORIES } from "@/lib/admin/category-limit";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { categorySchema } from "@/lib/validations/admin-product";
@@ -38,11 +39,25 @@ export async function upsertCategoryAction(
     const { error } = await supabase.from("categories").update(payload).eq("id", id);
     if (error) return { error: "Não foi possível salvar (o slug já pode estar em uso)." };
   } else {
+    const { count } = await supabase
+      .from("categories")
+      .select("id", { count: "exact", head: true });
+    if ((count ?? 0) >= MAX_CATEGORIES) {
+      return {
+        error: `Limite atingido: a loja pode ter no máximo ${MAX_CATEGORIES} categorias. Exclua uma que não use mais para criar outra.`,
+      };
+    }
+
     const { data, error } = await supabase
       .from("categories")
       .insert(payload)
       .select("id")
       .single();
+    if (error?.message.includes("max_categories_reached")) {
+      return {
+        error: `Limite atingido: a loja pode ter no máximo ${MAX_CATEGORIES} categorias.`,
+      };
+    }
     if (error || !data) {
       return { error: "Não foi possível criar a categoria (o slug já pode estar em uso)." };
     }

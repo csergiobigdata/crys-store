@@ -31,7 +31,7 @@ export function DeliveryForm({ prefill }: { prefill: CheckoutPrefill }) {
   useEffect(() => {
     if (cepDigits.length !== 8) return;
     let cancelled = false;
-    getCepQuote(cepDigits, 1)
+    getCepQuote(cepDigits, 1, [])
       .then((result) => {
         if (cancelled) return;
         setQuote({ digits: cepDigits, error: result?.addressError ?? null });

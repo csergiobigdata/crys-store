@@ -38,7 +38,7 @@ export default async function AdminProductsPage({
 
   let query = supabase
     .from("products")
-    .select("id, name, slug, base_price, status, inactivated_at, category:categories(name)", {
+    .select("id, name, slug, base_price, status, inactivated_at, is_test, category:categories(name)", {
       count: "exact",
     })
     .order("name");
@@ -64,6 +64,7 @@ export default async function AdminProductsPage({
     base_price: number;
     status: "A" | "I";
     inactivated_at: string | null;
+    is_test: boolean;
     category: { name: string } | null;
   }[];
 
@@ -115,6 +116,11 @@ export default async function AdminProductsPage({
                   >
                     {product.name}
                   </Link>
+                  {product.is_test && (
+                    <span className="ml-2 rounded-full bg-sky-light px-2 py-0.5 text-[11px] font-semibold text-sky-dark">
+                      Teste
+                    </span>
+                  )}
                 </td>
                 <td className="p-4 text-plum-soft">
                   {product.category?.name ?? "—"}

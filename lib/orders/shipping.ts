@@ -14,7 +14,13 @@
 
 export const SHIPPING_ORIGIN = { city: "Atibaia", state: "SP" } as const;
 
-export type ShippingMethodId = "pac" | "sedex" | "mini" | "same_day" | "next_day";
+export type ShippingMethodId =
+  | "pac"
+  | "sedex"
+  | "mini"
+  | "same_day"
+  | "next_day"
+  | "local_arranged";
 
 export type ShippingOption = {
   id: ShippingMethodId;
@@ -222,11 +228,16 @@ export type ShippingQuote = {
 /**
  * Opções de envio disponíveis para o destino. `city` só importa para
  * reconhecer Atibaia e as cidades da região; o estado vem sempre do CEP.
+ *
+ * `hasTestProduct` (algum item do carrinho é produto de teste) libera a
+ * "Entrega local, a combinar com a loja" para qualquer destino — a loja
+ * combina diretamente com quem está testando o aplicativo.
  */
 export function getShippingOptions(params: {
   cep: string;
   city?: string;
   totalUnits: number;
+  hasTestProduct?: boolean;
   now?: Date;
 }): ShippingQuote | null {
   const resolved = resolveZone(params.cep, params.city);
@@ -280,6 +291,19 @@ export function getShippingOptions(params: {
       description: "Motoboy ou app de entrega rápida (Lalamove/Borzoi).",
       price: local.next_day,
       deadline: "amanhã",
+    });
+  }
+
+  // Entrega local combinada diretamente com a loja: vale para a cidade da loja
+  // (Atibaia) ou quando há produto de teste no carrinho. Sem valor fixo — o
+  // frete entra como R$ 0,00 e o valor é acertado com a loja.
+  if (zone === "same_city" || params.hasTestProduct) {
+    options.push({
+      id: "local_arranged",
+      label: "Entrega local (mesmo dia / dia seguinte), a combinar com a loja",
+      description: "A loja entra em contato para combinar a entrega e o valor.",
+      price: 0,
+      deadline: "a combinar",
     });
   }
 

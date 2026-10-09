@@ -58,6 +58,7 @@ describe("getShippingOptions", () => {
       "mini",
       "same_day",
       "next_day",
+      "local_arranged",
     ]);
   });
 
@@ -111,5 +112,48 @@ describe("getShippingOptions", () => {
 
   it("devolve null para CEP inexistente", () => {
     expect(getShippingOptions({ cep: "00000-000", totalUnits: 1 })).toBeNull();
+  });
+});
+
+describe("entrega local a combinar", () => {
+  it("aparece em Atibaia, com valor zero e prazo a combinar", () => {
+    const option = getShippingOptions({
+      cep: "12940-000",
+      city: "Atibaia",
+      totalUnits: 1,
+      now: tuesdayMorning,
+    })?.options.find((o) => o.id === "local_arranged");
+    expect(option?.price).toBe(0);
+    expect(option?.deadline).toBe("a combinar");
+    expect(option?.label).toContain("a combinar com a loja");
+  });
+
+  it("não aparece fora de Atibaia quando não há produto de teste", () => {
+    for (const [cep, city] of [
+      ["06010-170", "Osasco"],
+      ["12900-000", "Bragança Paulista"],
+    ]) {
+      const ids = getShippingOptions({ cep, city, totalUnits: 1, now: tuesdayMorning })?.options.map(
+        (o) => o.id,
+      );
+      expect(ids).not.toContain("local_arranged");
+    }
+  });
+
+  it("com produto de teste aparece para qualquer destino", () => {
+    for (const [cep, city] of [
+      ["06010-170", "Osasco"],
+      ["20040-020", "Rio de Janeiro"],
+      ["69010-000", "Manaus"],
+    ]) {
+      const ids = getShippingOptions({
+        cep,
+        city,
+        totalUnits: 1,
+        hasTestProduct: true,
+        now: tuesdayMorning,
+      })?.options.map((o) => o.id);
+      expect(ids).toContain("local_arranged");
+    }
   });
 });

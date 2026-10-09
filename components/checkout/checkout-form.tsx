@@ -37,6 +37,7 @@ export function CheckoutForm({
   const [quote, setQuote] = useState<{
     digits: string;
     units: number;
+    cartKey: string;
     options: ShippingOption[];
     error: string | null;
   } | null>(null);
@@ -55,6 +56,11 @@ export function CheckoutForm({
 
   const cepDigits = cep.replace(/\D/g, "");
   const totalUnits = lines.reduce((sum, line) => sum + line.quantity, 0);
+  // Assinatura do carrinho: refaz a cotação se trocar um item por outro (um deles pode ser produto de teste).
+  const cartKey = lines
+    .map((line) => line.variantId)
+    .sort()
+    .join(",");
 
   // Consulta endereço + frete assim que o CEP tem 8 dígitos. A consulta roda
   // no servidor (a CSP do navegador não permite chamar o ViaCEP direto).
@@ -62,12 +68,17 @@ export function CheckoutForm({
     if (cepDigits.length !== 8 || totalUnits === 0) return;
 
     let cancelled = false;
-    getCepQuote(cepDigits, totalUnits)
+    getCepQuote(
+      cepDigits,
+      totalUnits,
+      cartKey ? cartKey.split(",") : [],
+    )
       .then((result) => {
         if (cancelled) return;
         setQuote({
           digits: cepDigits,
           units: totalUnits,
+          cartKey,
           options: result?.options ?? [],
           error: result?.addressError ?? null,
         });
@@ -80,6 +91,7 @@ export function CheckoutForm({
         setQuote({
           digits: cepDigits,
           units: totalUnits,
+          cartKey,
           options: [],
           error: "Não foi possível consultar o CEP agora. Tente novamente.",
         });
@@ -88,11 +100,13 @@ export function CheckoutForm({
     return () => {
       cancelled = true;
     };
-  }, [cepDigits, totalUnits]);
+  }, [cepDigits, totalUnits, cartKey]);
 
   // Só vale a cotação do CEP que está digitado agora.
   const currentQuote =
-    quote?.digits === cepDigits && quote.units === totalUnits ? quote : null;
+    quote?.digits === cepDigits && quote.units === totalUnits && quote.cartKey === cartKey
+      ? quote
+      : null;
   const shippingOptions = currentQuote?.options ?? [];
   // Sem escolha válida do cliente, o padrão é o PAC (Envio Normal).
   const selectedOption =

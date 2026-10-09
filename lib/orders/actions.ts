@@ -8,6 +8,7 @@ import { sendOrderCreatedEmail } from "@/lib/email/notify-customer";
 import { isCardPaymentEnabled } from "@/lib/mercadopago/card-enabled";
 import { type CepAddress, lookupCepAddress } from "@/lib/orders/cep-lookup";
 import { getShippingOptions, type ShippingOption } from "@/lib/orders/shipping";
+import { cartHasTestProduct } from "@/lib/orders/test-products";
 import { createPixPaymentForOrder } from "@/lib/pix/create-payment";
 import { getPixExpirationHours } from "@/lib/pix/settings";
 import { checkRateLimit } from "@/lib/security/rate-limit";
@@ -35,7 +36,11 @@ export type CepQuote = {
  * se a consulta de endereço falhar, ainda calculamos pelo CEP e o cliente
  * preenche o endereço à mão.
  */
-export async function getCepQuote(cep: string, totalUnits: number): Promise<CepQuote | null> {
+export async function getCepQuote(
+  cep: string,
+  totalUnits: number,
+  variantIds: string[] = [],
+): Promise<CepQuote | null> {
   const digits = cep.replace(/\D/g, "");
   if (digits.length !== 8) return null;
 
@@ -48,7 +53,8 @@ export async function getCepQuote(cep: string, totalUnits: number): Promise<CepQ
   const lookup = allowed ? await lookupCepAddress(digits) : ({ status: "unavailable" } as const);
 
   const city = lookup.status === "ok" ? lookup.address.city : undefined;
-  const quote = getShippingOptions({ cep: digits, city, totalUnits });
+  const hasTestProduct = await cartHasTestProduct(variantIds);
+  const quote = getShippingOptions({ cep: digits, city, totalUnits, hasTestProduct });
   if (!quote) {
     return { address: null, addressError: "CEP não encontrado.", options: [] };
   }
@@ -130,6 +136,7 @@ export async function createOrder(
     cep: data.cep,
     city: cityLookup.status === "ok" ? cityLookup.address.city : data.city,
     totalUnits,
+    hasTestProduct: await cartHasTestProduct(data.items.map((item) => item.variantId)),
   });
   const shippingOption = quote?.options.find((option) => option.id === data.shippingMethod);
   if (!shippingOption) {

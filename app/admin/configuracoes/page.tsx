@@ -41,9 +41,6 @@ export default async function AdminSettingsPage() {
         <p className="mt-1 text-sm text-plum-soft">
           O frete é calculado a partir de Atibaia-SP, por zona de destino, com
           PAC, SEDEX, Mini Envios e entrega local (mesmo dia / dia seguinte).
-          Os valores e prazos ficam na tabela de{" "}
-          <code>lib/orders/shipping.ts</code> e são estimativas até a loja
-          integrar uma cotação real dos Correios.
         </p>
       </section>
     </div>
