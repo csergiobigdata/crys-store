@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ClearCartOnMount } from "@/components/cart/clear-cart-on-mount";
 import { CardPaymentPanel } from "@/components/checkout/card-payment-panel";
+import { LocalDeliveryNotice } from "@/components/checkout/local-delivery-notice";
 import { PixPaymentPanel } from "@/components/checkout/pix-payment-panel";
 import { getMpEnv } from "@/lib/mercadopago/env";
 import { getMaxInstallments } from "@/lib/mercadopago/settings";
@@ -132,6 +133,10 @@ export default async function OrderPage({
             {address.shipping_deadline ? ` — prazo: ${address.shipping_deadline}` : ""}
           </p>
         )}
+        {address.shipping_method === "local_arranged" &&
+          !["enviado", "entregue", "cancelado", "expirado", "estornado"].includes(order.status) && (
+            <LocalDeliveryNotice className="mt-4" />
+          )}
       </section>
 
       <section className="mt-6 rounded-2xl border border-rose/30 bg-rose-light/20 p-6">

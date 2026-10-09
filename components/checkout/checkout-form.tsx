@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
+import { LocalDeliveryNotice } from "@/components/checkout/local-delivery-notice";
 import { Button } from "@/components/ui/button";
 import type { CheckoutPrefill } from "@/lib/auth/checkout-prefill";
 import { getCartDetails } from "@/lib/cart/actions";
@@ -309,6 +310,7 @@ export function CheckoutForm({
                   </span>
                 </label>
               ))}
+              {selectedOption?.id === "local_arranged" && <LocalDeliveryNotice />}
             </div>
           )}
         </section>
@@ -346,17 +348,29 @@ export function CheckoutForm({
             <span>Subtotal</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-plum-soft">
+          <div className="flex justify-between gap-3 text-plum-soft">
             <span>
               Frete{address.city && shippingCost !== null ? ` (${address.city}/${address.state})` : ""}
             </span>
-            <span>{shippingCost !== null ? formatCurrency(shippingCost) : "Informe o CEP"}</span>
+            <span className="flex-shrink-0">
+              {shippingCost !== null ? formatCurrency(shippingCost) : "Informe o CEP"}
+            </span>
           </div>
+          {selectedOption && (
+            <div className="rounded-lg bg-rose-light/40 px-3 py-2 text-xs text-plum">
+              <p className="font-medium">{selectedOption.label}</p>
+              <p className="mt-0.5 text-plum-soft">Prazo: {selectedOption.deadline}</p>
+            </div>
+          )}
           <div className="flex justify-between border-t border-rose-light pt-2 font-semibold text-plum">
             <span>Total</span>
             <span>{total !== null ? formatCurrency(total) : "—"}</span>
           </div>
         </div>
+
+        {selectedOption?.id === "local_arranged" && (
+          <LocalDeliveryNotice compact className="mt-4" />
+        )}
 
         {state?.error && (
           <p className="mt-4 rounded-lg bg-error-light px-3 py-2 text-sm text-error" role="alert">
