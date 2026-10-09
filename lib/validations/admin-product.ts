@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { MAX_COUPON_NAME_LENGTH, MAX_DISCOUNT_PERCENT } from "@/lib/orders/coupon-rules";
+import {
+  MAX_COUPON_CODE_LENGTH,
+  MAX_COUPON_NAME_LENGTH,
+  MAX_DISCOUNT_PERCENT,
+} from "@/lib/orders/coupon-rules";
 
 // FormData.get() devolve null quando o campo não veio no formulário (ex.: a
 // linha de variação só tem "Atributo 1"); o zod trataria null como erro.
@@ -70,7 +74,10 @@ export const couponSchema = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .min(2, { error: "Informe o código do cupom." }),
+    .min(2, { error: "Informe o código do cupom." })
+    .max(MAX_COUPON_CODE_LENGTH, {
+      error: `O código do cupom pode ter no máximo ${MAX_COUPON_CODE_LENGTH} caracteres.`,
+    }),
   discountType: z.enum(["percentual", "fixo"]),
   discountValue: z.coerce.number().positive({ error: "Informe um valor válido." }),
   minOrderValue: z

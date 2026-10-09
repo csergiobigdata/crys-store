@@ -3,7 +3,11 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { upsertCouponAction } from "@/lib/admin/coupon-actions";
-import { MAX_COUPON_NAME_LENGTH, MAX_DISCOUNT_PERCENT } from "@/lib/orders/coupon-rules";
+import {
+  MAX_COUPON_CODE_LENGTH,
+  MAX_COUPON_NAME_LENGTH,
+  MAX_DISCOUNT_PERCENT,
+} from "@/lib/orders/coupon-rules";
 
 type Coupon = {
   id: string;
@@ -64,10 +68,13 @@ export function CouponForm({ coupon }: { coupon: Coupon | null }) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-plum">Código</label>
+          <label className="block text-sm font-medium text-plum">
+            Código (até {MAX_COUPON_CODE_LENGTH} caracteres)
+          </label>
           <input
             name="code"
             required
+            maxLength={MAX_COUPON_CODE_LENGTH}
             defaultValue={coupon?.code}
             placeholder="BEMVINDA10"
             className="mt-1.5 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm uppercase"

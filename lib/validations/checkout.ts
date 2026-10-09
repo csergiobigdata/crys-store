@@ -1,3 +1,4 @@
+import { MAX_COUPON_CODE_LENGTH } from "@/lib/orders/coupon-rules";
 import { z } from "zod";
 import { MAX_QUANTITY_PER_ITEM } from "@/lib/cart/types";
 import { isValidCpf, onlyDigits } from "@/lib/validations/cpf";
@@ -47,6 +48,9 @@ export const checkoutSchema = z.object({
   couponCode: z
     .string()
     .trim()
+    .max(MAX_COUPON_CODE_LENGTH, {
+      error: `O código do cupom tem no máximo ${MAX_COUPON_CODE_LENGTH} caracteres.`,
+    })
     .optional()
     .transform((v) => (v ? v.toUpperCase() : undefined)),
   items: z

@@ -298,7 +298,10 @@ function mapCheckoutError(message?: string): string {
     return "Um dos itens do carrinho não está mais disponível.";
   }
   if (message === "invalid_coupon") {
-    return "Cupom inválido, expirado ou não aplicável a este pedido.";
+    return "Cupom inexistente, fora da vigência ou não aplicável a este pedido.";
+  }
+  if (message === "coupon_already_used") {
+    return "Você já utilizou este cupom.";
   }
   if (message === "empty_cart") {
     return "Seu carrinho está vazio.";

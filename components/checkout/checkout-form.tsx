@@ -9,6 +9,8 @@ import type { CheckoutPrefill } from "@/lib/auth/checkout-prefill";
 import { getCartDetails } from "@/lib/cart/actions";
 import type { CartLineDetails } from "@/lib/cart/types";
 import { createOrder, getCepQuote } from "@/lib/orders/actions";
+import { previewCoupon } from "@/lib/orders/coupon-actions";
+import { MAX_COUPON_CODE_LENGTH } from "@/lib/orders/coupon-rules";
 import type { ShippingOption } from "@/lib/orders/shipping";
 import { formatCurrency } from "@/lib/utils/format";
 
@@ -43,6 +45,14 @@ export function CheckoutForm({
     error: string | null;
   } | null>(null);
   const [chosenMethod, setChosenMethod] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discount: number;
+    capped: boolean;
+  } | null>(null);
   const [state, formAction, pending] = useActionState(createOrder, undefined);
   // Endereço já salvo do cliente: não deve ser sobrescrito pela consulta
   // enquanto o CEP continuar sendo o mesmo.
@@ -120,7 +130,53 @@ export function CheckoutForm({
   const cepLoading = cepDigits.length === 8 && !currentQuote;
 
   const subtotal = details.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const total = shippingCost !== null ? subtotal + shippingCost : null;
+  // O desconto só vale enquanto o campo ainda tem o código que foi aplicado.
+  const couponDiscount =
+    appliedCoupon && appliedCoupon.code === couponInput.trim().toUpperCase()
+      ? appliedCoupon.discount
+      : 0;
+  const total = shippingCost !== null ? subtotal - couponDiscount + shippingCost : null;
+
+  async function requestCoupon(code: string) {
+    const cpfField = document.getElementById("cpf") as HTMLInputElement | null;
+    const emailField = document.getElementById("email") as HTMLInputElement | null;
+    return previewCoupon({
+      code,
+      items: lines,
+      cpf: cpfField?.value,
+      email: emailField?.value,
+    });
+  }
+
+  async function applyCoupon() {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) {
+      setCouponError("Digite o código do cupom.");
+      return;
+    }
+    setCouponChecking(true);
+    setCouponError(null);
+    try {
+      const result = await requestCoupon(code);
+      if (result.ok) {
+        setAppliedCoupon({ code: result.code, discount: result.discount, capped: result.capped });
+        setCouponInput(result.code);
+      } else {
+        setAppliedCoupon(null);
+        setCouponError(result.message);
+      }
+    } catch {
+      setCouponError("Não foi possível validar o cupom agora. Tente novamente.");
+    } finally {
+      setCouponChecking(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponError(null);
+    setCouponInput("");
+  }
 
   if (hydrated && details.length === 0) {
     return (
@@ -317,11 +373,57 @@ export function CheckoutForm({
 
         <section>
           <h2 className="font-display text-xl text-plum">Cupom (opcional)</h2>
-          <input
-            name="couponCode"
-            placeholder="Código do cupom"
-            className={`${inputClass} mt-4 max-w-xs`}
-          />
+          <div className="mt-4 flex max-w-sm gap-2">
+            <input
+              name="couponCode"
+              value={couponInput}
+              maxLength={MAX_COUPON_CODE_LENGTH}
+              autoComplete="off"
+              autoCapitalize="characters"
+              placeholder="Código do cupom"
+              onChange={(event) => {
+                setCouponInput(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""));
+                setCouponError(null);
+              }}
+              onKeyDown={(event) => {
+                // Enter aplica o cupom em vez de enviar o pedido.
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void applyCoupon();
+                }
+              }}
+              className={`${inputClass} mt-0 flex-1 uppercase`}
+            />
+            {appliedCoupon && appliedCoupon.code === couponInput ? (
+              <button
+                type="button"
+                onClick={removeCoupon}
+                className="rounded-full border border-rose/40 px-4 py-2 text-sm font-medium text-plum hover:bg-rose-light/40"
+              >
+                Remover
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void applyCoupon()}
+                disabled={couponChecking || couponInput.trim() === ""}
+                className="rounded-full bg-rose px-5 py-2 text-sm font-medium text-white hover:bg-rose-dark disabled:opacity-50"
+              >
+                {couponChecking ? "Validando..." : "Aplicar"}
+              </button>
+            )}
+          </div>
+          {couponError && (
+            <p className="mt-2 rounded-lg bg-error-light px-3 py-2 text-sm text-error" role="alert">
+              {couponError}
+            </p>
+          )}
+          {appliedCoupon && appliedCoupon.code === couponInput && (
+            <p className="mt-2 rounded-lg bg-success-light px-3 py-2 text-sm text-success" role="status">
+              Cupom {appliedCoupon.code} aplicado: desconto de {formatCurrency(appliedCoupon.discount)}
+              {appliedCoupon.capped ? " (limitado a 30% do valor dos produtos)" : ""}.
+            </p>
+          )}
         </section>
 
         <section>
@@ -348,6 +450,12 @@ export function CheckoutForm({
             <span>Subtotal</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
+          {couponDiscount > 0 && (
+            <div className="flex justify-between text-success">
+              <span>Desconto (cupom {appliedCoupon?.code})</span>
+              <span>-{formatCurrency(couponDiscount)}</span>
+            </div>
+          )}
           <div className="flex justify-between gap-3 text-plum-soft">
             <span>
               Frete{address.city && shippingCost !== null ? ` (${address.city}/${address.state})` : ""}
