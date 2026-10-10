@@ -10,6 +10,9 @@
   Resend e página para criar a nova senha.
 - Expiração automática de pedidos pelo Vercel Cron (`vercel.json`), uma vez por dia.
 - Versão fixa do aplicativo em 1.2.0.
+- Comprovante Pix: o e-mail ao administrador leva o arquivo anexado, reduzido ao menor tamanho
+  (imagem até 1600 px em WebP/JPEG/PNG, o que ficar menor; PDF segue igual). O original fica
+  guardado no painel.
 - Cartão em até 6x: enquanto `CARD_PAYMENTS_ENABLED` não for ligado, a página inicial, o checkout e
   os Termos avisam que o cartão ainda não está liberado e que em breve estará.
 - Login: depois de entrar, abre a página inicial (e não mais "Minha conta"); o redirecionamento

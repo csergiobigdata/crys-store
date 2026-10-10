@@ -42,9 +42,18 @@ export async function notifyAdminNewPixOrder(params: {
   });
 }
 
-export async function notifyAdminPixProofUploaded(params: { orderNumber: string }) {
+export async function notifyAdminPixProofUploaded(params: {
+  orderNumber: string;
+  customerName?: string | null;
+  total?: number;
+  /** Comprovante já reduzido, para ir anexado ao e-mail. */
+  attachment?: { filename: string; content: Buffer; contentType: string; originalSize: number };
+}) {
   await sendSafely(() => {
     const emailEnv = getEmailEnv();
+    const attachment = params.attachment;
+    const sizeKb = (bytes: number) => `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
     return getResendClient().emails.send({
       from: EMAIL_FROM,
       to: emailEnv.ADMIN_NOTIFICATION_EMAIL,
@@ -52,10 +61,26 @@ export async function notifyAdminPixProofUploaded(params: { orderNumber: string 
       html: `
         <p>O cliente enviou o comprovante de pagamento do pedido
         <strong>${escapeHtml(params.orderNumber)}</strong>.</p>
+        <p>
+          ${params.customerName ? `<strong>Cliente:</strong> ${escapeHtml(params.customerName)}<br/>` : ""}
+          ${params.total !== undefined ? `<strong>Valor do pedido:</strong> ${formatCurrency(params.total)}` : ""}
+        </p>
+        ${
+          attachment
+            ? `<p>O comprovante está <strong>anexado</strong> a este e-mail (${escapeHtml(sizeKb(attachment.content.length))}${
+                attachment.content.length < attachment.originalSize
+                  ? `, reduzido do original de ${escapeHtml(sizeKb(attachment.originalSize))}`
+                  : ""
+              }). O arquivo original fica guardado no painel.</p>`
+            : ""
+        }
         <p><a href="${emailEnv.NEXT_PUBLIC_SITE_URL}/admin/pedidos/${encodeURIComponent(params.orderNumber)}">
-          Revisar comprovante
+          Revisar comprovante e confirmar o pagamento
         </a></p>
       `,
+      attachments: attachment
+        ? [{ filename: attachment.filename, content: attachment.content }]
+        : undefined,
     });
   });
 }

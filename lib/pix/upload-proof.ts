@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { notifyAdminPixProofUploaded } from "@/lib/email/notify-admin";
+import { compressProofForEmail } from "@/lib/pix/compress-proof";
 import { getOrderForViewing } from "@/lib/orders/get-order";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -87,7 +88,25 @@ export async function uploadPixProof(
     });
   }
 
-  await notifyAdminPixProofUploaded({ orderNumber: order.order_number });
+  // O e-mail leva o comprovante anexado, no menor tamanho possível. Se a redução
+  // falhar por qualquer motivo, o aviso sai igual (com o link do painel).
+  let attachment: Awaited<ReturnType<typeof compressProofForEmail>> | undefined;
+  try {
+    attachment = await compressProofForEmail(
+      Buffer.from(await file.arrayBuffer()),
+      file.type,
+      `comprovante-${order.order_number}`,
+    );
+  } catch (error) {
+    console.error("Não foi possível preparar o comprovante para o e-mail:", error);
+  }
+
+  await notifyAdminPixProofUploaded({
+    orderNumber: order.order_number,
+    customerName: order.guest_name,
+    total: Number(order.total),
+    attachment,
+  });
 
   revalidatePath(`/pedidos/${order.order_number}`);
 
