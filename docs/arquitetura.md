@@ -1,9 +1,11 @@
 # Chrys Store — Arquitetura e Modelo de Dados
 
-> Etapa 1 do projeto. Documento de arquitetura, sem código. Pontos marcados com
-> **[ASSUNÇÃO]** são decisões que tomei por não estarem especificadas no prompt
-> original — revise e me avise se quiser mudar algo antes de eu seguir para a
-> Etapa 2 (setup do projeto).
+> Documento de arquitetura. Os capítulos 1 a 6 são a **especificação original (Etapa 1)**;
+> pontos marcados com **[ASSUNÇÃO]** foram decisões tomadas por não estarem especificadas.
+> Tudo o que **mudou depois** (migrações `0016` a `0025`, entrega local, cupons, administradores,
+> Fale Conosco, "Online agora", recuperação de senha, etc.) está resumido no
+> **[capítulo 7](#7-atualizações-depois-da-especificação-versão-120)**, que prevalece quando
+> houver diferença. Operação do dia a dia: [operacao.md](operacao.md).
 
 Segmento confirmado: **acessórios** (bolsas, bijuterias, cintos, etc.).
 Parcelamento máximo confirmado: **6x** no cartão de crédito (Mercado Pago).
@@ -416,9 +418,9 @@ Para impedir que dois clientes comprem a última unidade simultaneamente
 4. A expiração do Pix é verificada de duas formas combinadas (sem
    dependência de infraestrutura paga): (a) ao qualquer acesso à página do
    pedido ou ao painel admin, o servidor checa `pix_expires_at < now()` e
-   expira na hora; (b) uma rotina agendada (cron job do próprio
-   Netlify/Cloudflare, gratuito) roda periodicamente para expirar pedidos
-   mesmo sem acesso.
+   expira na hora; (b) uma rotina agendada roda periodicamente para expirar
+   pedidos mesmo sem acesso — hoje é o **Vercel Cron** (`vercel.json`, 1×/dia),
+   ver [§7.8](#7-atualizações-depois-da-especificação-versão-120).
 
 ---
 
@@ -478,7 +480,89 @@ estoque) é feita no servidor, nunca direto do navegador.
 
 ---
 
-**Pronto para aprovação.** Se este modelo estiver de acordo, sigo para a
-**Etapa 2: setup do projeto, banco, migrações e autenticação**. Qualquer
-ajuste nos pontos marcados como [ASSUNÇÃO] (ou em qualquer outra parte do
-modelo), me avise antes e eu atualizo este documento primeiro.
+## 7. Atualizações depois da especificação (versão 1.2.0)
+
+Resumo do que foi acrescentado ou alterado em relação aos capítulos 1 a 6. Os nomes de arquivos
+são relativos à raiz do projeto.
+
+### 7.1 Migrações (`supabase/migrations/`)
+Hoje são **25**. As de `0016` em diante:
+
+| Migração | O que muda no modelo |
+|---|---|
+| `0016` | `products.status` (`A`/`I`) e `inactivated_at`; a coluna `active` segue sincronizada por gatilho |
+| `0017` | `checkout_create_order` passa a usar `search_path = public, extensions` (pgcrypto) |
+| `0018` | Número do pedido mensal `cs-AAAA-MM-NNNNNN` (`order_number_counters`); promoção a admin pelo SQL Editor |
+| `0019` | `orders.payment_reminder_sent_at` (um lembrete por pedido) |
+| `0020` | `pix_payments.mp_payment_id` / `mp_status`; função `confirm_pix_payment_by_mp` (Pix automático) |
+| `0021` | `profiles.nickname`; `orders.cancelled_at`, `cancelled_by`, `cancelled_by_name`, `cancellation_reason`, `cancellation_note`; `admin_cancel_order` com justificativa |
+| `0022` | Gatilho que limita a **10 categorias**; `products.is_test` |
+| `0023` | `coupons.name` (≤ 10); percentual ≤ 30%; **teto de 30%** do valor dos produtos em `checkout_create_order` |
+| `0024` | **Uso único por cliente** do cupom (conta, CPF ou e-mail) em `checkout_create_order` |
+| `0025` | `profiles.is_primary_admin` (único), gatilho de **máx. 3 administradores**, `set_primary_admin`, tabela `contact_messages` |
+
+### 7.2 Dados novos
+- **`profiles`**: `nickname`, `phone` (contato público do administrador principal), `is_primary_admin`.
+- **`coupons`**: `name`. Regras: nome ≤ 10, código ≤ 15, percentual ≤ 30%, desconto ≤ 30% dos produtos (sem frete).
+- **`contact_messages`**: nome, e-mail, telefone, mensagem, `emailed_to`, `email_error`, `read_at`. RLS: só o admin lê/atualiza/exclui; só a service role grava.
+- **`app_settings`**: nova chave `local_delivery` (`originCep`, `originLat`, `originLng`, `tiers[]`, `motoboyFee`). `company_info.contato` deixou de ser editável: vem do administrador principal.
+- Status do pedido inalterados (cap. 3); `cancelado` agora registra quem, quando e por quê.
+
+### 7.3 Frete e entrega local (`lib/orders/`)
+- `shipping.ts`: opções de envio por zona (Atibaia, região, estados). Em Atibaia: **entrega local a combinar**
+  (taxa por faixa de distância) e **motoboy** (valor fixo). Com **produto de teste** no carrinho, a entrega local
+  vale para qualquer destino a R$ 0,00.
+- `local-delivery.ts` (puro): `haversineKm`, `localFeeForDistance`; teto de taxa **R$ 50,00**, até 5 faixas.
+- `geocode.ts`: coordenadas por **AwesomeAPI** (CEP) e, se faltar, **OpenStreetMap/Nominatim** (rua). A BrasilAPI
+  **não** é usada para distância (devolve o centro da cidade para qualquer CEP). Distância desconhecida =
+  taxa da faixa mais distante, nunca grátis.
+- O frete é **recalculado no servidor** na criação do pedido; o navegador só escolhe o serviço.
+
+### 7.4 Cupons (`lib/orders/coupon-*.ts`)
+- `previewCoupon` (Server Action) valida e mostra o desconto **antes** de finalizar: subtotal pelos preços do
+  banco, vigência, limite de usos, pedido mínimo e uso único por cliente. Mensagens específicas por motivo.
+- A criação do pedido revalida tudo no banco (`checkout_create_order`); o teto de 30% vale lá, inclusive para
+  cupons antigos.
+
+### 7.5 Administradores, contato público e Fale Conosco
+- Até **3 administradores**; o **principal** (`is_primary_admin`) gerencia a lista (`requirePrimaryAdmin`,
+  `lib/admin/admin-users-actions.ts`).
+- `lib/site/contact.ts`: contato público = **e-mail + telefone do principal** (rodapé "Atendimento", janela
+  "Sobre", páginas legais).
+- **Fale Conosco** (`/fale-conosco`): `contactSchema` com **filtro de palavrões** (`lib/validations/profanity.ts`,
+  também no navegador); grava em `contact_messages` e envia **um e-mail por administrador** (`notify-contact.ts`);
+  o resultado fica visível em `/admin/mensagens`.
+
+### 7.6 Conta, senha e login
+- **Esqueci minha senha**: `/esqueci-senha` → e-mail pelo **Resend** com link `/redefinir-senha?token_hash=…`
+  (token gerado por `auth.admin.generateLink`); o token é consumido **ao enviar a nova senha**
+  (`verifyOtp` + `updateUser`), nunca ao abrir a página.
+- Depois do login abre a página inicial (ou o destino original, só se for caminho do próprio site).
+- `/minha-conta`: nome, apelido, telefone, dados de entrega. O nome no menu segue a regra: apelido; senão
+  "Administrador" (admin) ou primeiro nome (cliente; nome de uma palavra = 10 primeiras letras).
+
+### 7.7 Pix, comprovante e e-mails
+- Comprovante: seletor com arrastar/clicar e pré-visualização (`proof-file-picker.tsx`). O e-mail ao administrador
+  leva o arquivo **anexado e reduzido** (`lib/pix/compress-proof.ts`, sharp: ≤ 1600 px, menor entre WebP/JPEG/PNG;
+  PDF intacto); o original fica no Storage (`payment-proofs`).
+- Pix automático e cartão (Mercado Pago) permanecem implementados e **desligados** (`CARD_PAYMENTS_ENABLED`);
+  é a **2ª fase**.
+
+### 7.8 Agendamento e versão
+- **Vercel Cron** (`vercel.json`): `GET /api/cron/expire-orders` 1×/dia (06:00 UTC), autenticado por
+  `Authorization: Bearer <CRON_SECRET>` (valor **só ASCII**). Substitui o workflow do GitHub Actions.
+- **Versão fixa 1.2.0** em `lib/app-version.ts` (exibida em "Sobre"); `package.json` acompanha, garantido por teste.
+
+### 7.9 Presença "online agora"
+`components/site/presence-tracker.tsx` (todas as páginas, exceto `/admin`) anuncia **só a área** do site pelo
+Supabase Realtime; `components/admin/online-now.tsx` soma por área na Visão geral. Sem gravação em banco, sem
+dados pessoais. A CSP libera `wss://*.supabase.co`.
+
+### 7.10 Outros ajustes
+- Datas/horas sempre em **horário de Brasília** (`formatDateTime`, `formatDateTimeSeconds`), pois o servidor roda em UTC.
+- Tema claro único (`color-scheme: only light`).
+- Telas: carrinho com lixeira por produto e "Esvaziar carrinho" (admin); avisos "(em breve)" do cartão.
+
+### 7.11 Pontos em aberto
+Domínio próprio + Resend (e-mails a clientes e SMTP do Supabase); Mercado Pago (2ª fase); testes de integração
+em banco real; revisão dos trechos `[REVISAR]` das páginas legais.

@@ -1,379 +1,281 @@
 # Chrys Store
 
-E-commerce de acessórios (bolsas, bijuterias, cintos) construído com
-Next.js (App Router) + Supabase + Mercado Pago + Pix estático.
+Loja virtual de acessórios, itens de casa e kits de presente, feita com
+Next.js (App Router) + Supabase + Resend, hospedada na Vercel.
 
-> Projeto completo pelas 8 etapas da especificação — veja
-> [Status do projeto](#status-do-projeto) no final deste documento. Ainda
-> não foi testado de ponta a ponta contra um Supabase/Mercado Pago reais
-> (veja [Testes](#testes) e [Revisão de segurança](#revisão-de-segurança)).
+**Versão do aplicativo: 1.2.0 (fixa).** Ela aparece na janela "Sobre" do
+rodapé e **não muda a cada deploy** — ver [Versão fixa](#versão-fixa).
+Histórico de mudanças em [CHANGELOG.md](CHANGELOG.md); arquitetura e modelo de
+dados em [docs/arquitetura.md](docs/arquitetura.md); guia de operação no dia a
+dia em [docs/operacao.md](docs/operacao.md).
 
-Arquitetura e modelo de dados completos: [docs/arquitetura.md](docs/arquitetura.md).
+## Em que fase o projeto está
+
+| Fase | Situação |
+|---|---|
+| **1ª fase — Pix** (QR Code + comprovante + confirmação pelo administrador) | **No ar** em `https://crys-store.vercel.app` |
+| **2ª fase — Mercado Pago** (cartão em até 6x e confirmação automática do Pix) | **Não iniciada por decisão do dono.** O código existe, mas está desligado (`CARD_PAYMENTS_ENABLED`) e sem credenciais. Será pedida à parte. |
+| Domínio próprio + e-mail para clientes (Resend com domínio verificado) | Pendente, a cargo do dono |
+
+Enquanto o cartão não for liberado, a página inicial, o checkout e os Termos
+de Uso avisam que o cartão em até 6x "ainda não está liberado" e "em breve".
 
 ## Stack
 
-- **Front-end**: Next.js 16 (App Router) + TypeScript + Tailwind CSS v4
-- **Back-end**: Server Actions / Route Handlers do Next.js
-- **Banco/Auth/Storage**: Supabase (Postgres + Auth + Storage)
-- **Pagamentos**: Pix estático (gerador próprio) + Mercado Pago (cartão)
+- **Front-end / back-end**: Next.js 16 (App Router, Server Actions e Route Handlers), TypeScript, Tailwind CSS v4
+- **Banco, autenticação e arquivos**: Supabase (Postgres + Auth + Storage + Realtime)
+- **Pagamento**: Pix estático (QR Code próprio, confirmação manual); Pix automático e cartão pelo Mercado Pago (2ª fase)
 - **E-mail**: Resend
-- **Validação**: Zod
+- **Validação**: Zod · **Imagens**: sharp (reduz o comprovante anexado ao e-mail)
+- **Testes**: Vitest · **Hospedagem**: Vercel (com Vercel Cron)
+
+## Funcionalidades
+
+### Loja
+- Catálogo com filtros e busca, página de produto, categorias na faixa do topo
+  (com mais de 3 categorias os botões ficam compactos; máximo de **10**).
+- **Carrinho** rápido: +/− respondem na hora, quantidade digitável, lixeira por
+  produto; o carrinho de visitante é unido ao da conta no login.
+- **Checkout** (convidado ou logado) com CEP automático, **frete** e **cupom**:
+  - Correios (PAC, SEDEX, Mini Envios) por zona, a partir de Atibaia-SP;
+  - **Entrega local** (Atibaia): taxa por **faixa de distância** (R$ 0,00 a
+    R$ 50,00, definida pelo administrador) e **motoboy** (valor fixo do
+    administrador); a opção "Entrega local — A combinar com a loja" mostra um
+    aviso em destaque (a loja só despacha depois de combinar);
+  - a mesma opção local vale para qualquer destino quando há **produto de teste**
+    no carrinho;
+  - **Cupom**: botão **Aplicar** com desconto imediato no resumo; código de até 15
+    caracteres; teto de **30%** do valor dos produtos (sem frete); uso **único por
+    cliente** (conta, CPF ou e-mail); mensagens claras para cupom inexistente,
+    fora da vigência, esgotado, abaixo do pedido mínimo ou já utilizado.
+- **Pix**: QR Code e "copia e cola"; o cliente envia o comprovante (clicar ou
+  arrastar, pré-visualização, JPG/PNG/WebP/PDF até 5 MB); o administrador confirma
+  no painel. O e-mail ao administrador leva o comprovante **anexado, no menor
+  tamanho possível** (imagem até 1600 px em WebP/JPEG/PNG, o menor; PDF igual).
+- **Conta**: cadastro/login, "Esqueci minha senha", dados de entrega, apelido,
+  telefone, histórico de pedidos e exclusão de conta (LGPD). Depois do login abre a
+  página inicial.
+- **Sobre** (rodapé): logomarca, versão e contato do administrador principal.
+- **Fale Conosco**: mensagem com filtro de palavrões; vai por e-mail a **todos os
+  administradores** e fica guardada no painel.
+- Páginas legais (Termos, Privacidade, Trocas, Entrega) e aviso de cookies.
+
+### Painel administrativo (`/admin`)
+- **Visão geral** com contadores e o card **"Online agora"** (abas abertas e em qual
+  área do site; anônimo, via Supabase Realtime).
+- **Produtos** (status A/I, fotos, variações e estoque, marca "Produto de teste"),
+  **Categorias** (máx. 10), **Cupons** (nome de até 10 caracteres, código, teto 30%).
+- **Pedidos**: confirmar/recusar Pix, marcar como enviado, estornar cartão e
+  **cancelar** com justificativa (guarda quem cancelou, data/hora/segundo em
+  horário de Brasília e o motivo).
+- **Mensagens** (Fale Conosco), **Relatórios**, **Auditoria**.
+- **Administradores**: de 1 a **3**; só o **principal** gerencia a lista, e o e-mail e o
+  telefone dele são o contato público da loja.
+- **Configurações**: prazo do Pix, chave Pix, dados da empresa e **entrega local**
+  (CEP/coordenadas da loja, faixas de distância e valor do motoboy).
+- "Esvaziar carrinho" só para administradores, sempre sobre o próprio carrinho.
 
 ## Pré-requisitos
 
-- Node.js 20.9+ e npm
-- Uma conta gratuita no [Supabase](https://supabase.com)
-- (Mais adiante) uma conta de desenvolvedor no
-  [Mercado Pago](https://www.mercadopago.com.br/developers) e no
-  [Resend](https://resend.com)
+- Node.js 20.9+ (o projeto foi desenvolvido com Node 24) e npm
+- Conta no [Supabase](https://supabase.com), na [Vercel](https://vercel.com) e no
+  [Resend](https://resend.com) (a do Resend deve ser criada com o **e-mail do dono
+  da loja**, ver [E-mails](#e-mails-resend))
 
-## Instalação
+## Instalação local
 
 ```bash
 npm install
 cp .env.example .env.local
+npm run dev        # http://localhost:3000
 ```
 
-Preencha `.env.local` com as chaves descritas em
-[Variáveis de ambiente](#variáveis-de-ambiente). **Nunca** commite
-`.env.local` — apenas `.env.example` (sem valores reais) é versionado.
+Preencha `.env.local` conforme [Variáveis de ambiente](#variáveis-de-ambiente).
+**Nunca** commite `.env.local` — só o `.env.example` (sem valores) é versionado.
 
-## Configuração do Supabase
+## Banco de dados (Supabase)
 
-1. Crie um projeto em [supabase.com/dashboard](https://supabase.com/dashboard)
-   (plano gratuito).
-2. Em **Project Settings → API**, copie para o seu `.env.local`:
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` key → `SUPABASE_SERVICE_ROLE_KEY` (**nunca** exponha
-     esta chave ao navegador; ela só é usada em código de servidor, em
-     `lib/supabase/admin.ts`)
-3. Aplique as migrações (todas as tabelas, funções e políticas de RLS em
-   `supabase/migrations/`). Duas formas:
+1. Crie o projeto (região **South America (São Paulo)** é a ideal).
+2. Em **Project Settings → API Keys**, copie a URL, a chave `anon` e a `service_role`
+   (**nunca** exponha a `service_role` ao navegador: ela só é usada em
+   `lib/supabase/admin.ts`, protegido por `import "server-only"`).
+3. Aplique as migrações de `supabase/migrations/` **em ordem, uma por vez**, pelo SQL
+   Editor (ou `npx supabase db push`). Hoje são **25 migrações**:
 
-   **Opção A — Supabase CLI (recomendado):**
+| Migração | Conteúdo |
+|---|---|
+| 0001–0011 | Extensões, perfis, catálogo, carrinho e cupons, pedidos, pagamentos, frete e configurações, auditoria, RLS, buckets de arquivos, limite de tentativas |
+| 0012–0015 | Função do checkout, ciclo de vida do Pix, Mercado Pago, ações administrativas de pedido |
+| 0016 | Status do produto (A/I) |
+| 0017 | Correção do `search_path` do checkout (pgcrypto) |
+| 0018 | Número do pedido mensal (`cs-AAAA-MM-NNNNNN`) e promoção a admin pelo SQL Editor |
+| 0019 | Lembrete de pagamento |
+| 0020 | Pix dinâmico pelo Mercado Pago (`confirm_pix_payment_by_mp`) |
+| 0021 | Apelido do usuário e dados do cancelamento de pedido |
+| 0022 | Limite de 10 categorias e flag de produto de teste |
+| 0023 | Nome do cupom, teto de 30% de desconto no checkout |
+| 0024 | Cupom de uso único por cliente |
+| 0025 | Administrador principal, limite de 3 administradores e mensagens do Fale Conosco |
 
-   ```bash
-   npx supabase login
-   npx supabase link --project-ref <seu-project-ref>
-   npx supabase db push
-   ```
+4. **Dados de exemplo** (`supabase/seed.sql`): só para desenvolvimento. **Não rode em
+   produção.**
+5. **Authentication → URL Configuration**: Site URL = domínio da loja.
 
-   **Opção B — SQL Editor do dashboard:** copie e execute o conteúdo de
-   cada arquivo em `supabase/migrations/`, em ordem numérica (0001, 0002,
-   ...).
+> Os arquivos `supabase/aplicar-*.sql` são apenas roteiros de apoio para bancos que
+> já tinham parte das migrações; o caminho oficial é a pasta `migrations/`.
 
-4. (Opcional, recomendado em desenvolvimento) Popule com dados de exemplo
-   executando o conteúdo de `supabase/seed.sql` no SQL Editor — cria
-   categorias, produtos, variações, uma regra de frete fixo e as chaves de
-   `app_settings`.
-
-### Como tornar um usuário admin
-
-Não existe fluxo de UI para isso (decisão de segurança). Depois que o usuário
-se cadastrar e confirmar o e-mail, rode no SQL Editor do Supabase (exige a
-migração `0018`, que permite a promoção por ali):
+### Administradores
+O primeiro administrador é promovido pelo SQL Editor (a pessoa precisa ter conta
+confirmada):
 
 ```sql
 update profiles set role = 'admin'
-where id = (select id from auth.users where email = 'email-do-usuario@exemplo.com');
+where id = (select id from auth.users where email = 'email@exemplo.com');
 ```
 
-Depois, saia e entre de novo no site e acesse `/admin`.
-
-### Painel administrativo
-
-Depois de logar com uma conta `admin`, acesse `/admin`:
-
-- `/admin/produtos` — CRUD de produtos, fotos (bucket `product-images`) e variações/estoque.
-  Todo produto tem **status `A` (ativo) ou `I` (inativo)**; só os `A` aparecem
-  na loja. Produto novo nasce `A`. Ao excluir (sempre com confirmação): se o
-  produto já tem venda, ele **não é apagado** — vira `I` e a data de
-  inativação é gravada; sem vendas, é removido de vez
-- `/admin/categorias` — criar, editar e excluir categorias (com confirmação; uma
-  categoria com produtos não pode ser excluída, só desativada)
-- `/admin/cupons` — cupons de desconto (percentual/fixo, validade, limite de uso)
-- `/admin/pedidos` — lista com filtro por status/meio de pagamento; cada
-  pedido tem confirmação/recusa de Pix, estorno de cartão, marcar como
-  enviado (com rastreio) e cancelar
-- `/admin/configuracoes` — prazo do Pix, parcelamento máximo, dados da
-  empresa (usados no rodapé do site) e regras de frete
-- `/admin/relatorios` — faturamento por período e por meio de pagamento
-- `/admin/auditoria` — quem alterou o quê e quando (pedidos, produtos, etc.)
-
-## Páginas legais e LGPD
-
-Textos-modelo já publicados, com trechos marcados **[REVISAR]** onde
-dependem de dados reais da empresa ou de decisões de negócio (prazo de
-entrega, foro, encarregado de dados, etc.):
-
-- `/termos-de-uso`
-- `/politica-de-privacidade`
-- `/politica-de-trocas-e-devolucoes` (direito de arrependimento de 7 dias — CDC/Decreto 7.962/2013)
-- `/politica-de-entrega`
-
-Esses quatro textos e o rodapé do site leem razão social, CNPJ/CPF,
-endereço e contato de `app_settings` (editável em `/admin/configuracoes`) —
-**revise esses dados antes de publicar**, pois hoje aparecem como
-`[REVISAR] ... não configurado` até serem preenchidos.
-
-Também implementados:
-- **Aviso de cookies** — banner fixo no rodapé (cookies essenciais apenas; sem rastreamento).
-- **Exclusão de conta** (LGPD, art. 18) — em `/minha-conta`, exclusão
-  self-service que remove o usuário do Supabase Auth; pedidos já feitos
-  continuam no histórico (como um pedido de convidado), sem ficar
-  associados à conta excluída.
-
-## Configuração do Resend (e-mails)
-
-1. Crie uma conta gratuita em [resend.com](https://resend.com) e gere uma API key.
-2. Para produção, verifique um domínio próprio no Resend e defina a
-   variável `EMAIL_FROM` (ex.: `Chrys Store <pedidos@seudominio.com.br>`).
-   Sem ela, o remetente é `onboarding@resend.dev`, que o Resend só entrega
-   para o e-mail dono da conta — serve para desenvolvimento e testes.
-3. Preencha `RESEND_API_KEY` e `ADMIN_NOTIFICATION_EMAIL` no `.env.local`.
-
-## Configuração do Mercado Pago (sandbox)
-
-1. Crie uma conta em [mercadopago.com.br/developers](https://www.mercadopago.com.br/developers/panel).
-2. Em **Suas integrações → crie uma aplicação**, você recebe credenciais
-   de **teste** e de produção separadas. Use as de **teste** primeiro:
-   - `Public key` de teste → `NEXT_PUBLIC_MP_PUBLIC_KEY`
-   - `Access token` de teste → `MP_ACCESS_TOKEN`
-3. Em **Webhooks**, cadastre a URL `https://<seu-domínio>/api/webhooks/mercadopago`
-   (em desenvolvimento local, use um túnel como `ngrok` para expor
-   `localhost:3000`) e copie a **assinatura secreta** gerada → `MP_WEBHOOK_SECRET`.
-4. Para testar pagamentos sem cartão real, use os
-   [cartões de teste do Mercado Pago](https://www.mercadopago.com.br/developers/pt/docs/checkout-api/integration-test/test-cards) —
-   eles simulam aprovação, recusa e diferentes motivos de recusa.
-5. Só troque para as credenciais de produção depois de validar o fluxo
-   completo (pagamento aprovado, recusado e webhook) no sandbox.
-
-O limite de parcelas exibido no Payment Brick vem de `app_settings.mp_max_installments`
-(editável sem redeploy), com `MP_MAX_INSTALLMENTS` como padrão.
-
-## Pix automático (Mercado Pago)
-
-Com `MP_ACCESS_TOKEN` configurado, cada pedido Pix é criado como pagamento
-`pix` na API do Mercado Pago (QR único, vencimento igual ao do pedido). O
-mesmo webhook do cartão confirma o pagamento (`confirm_pix_payment_by_mp`,
-migração `0020`), marca o pedido como pago e envia o e-mail ao cliente — sem
-comprovante e sem ação do admin. Exige **chave Pix cadastrada na conta
-Mercado Pago**. Se o Mercado Pago não estiver configurado ou falhar na
-criação, o checkout cai automaticamente no Pix estático (chave própria,
-comprovante e confirmação manual em `/admin/pedidos`). Se um Pix for pago
-depois de o pedido expirar, o histórico do pedido recebe um aviso "ATENÇÃO"
-para reembolso/reativação manual.
-
-## Expiração automática de pedidos
-
-Pedidos Pix vencidos (prazo em `PIX_EXPIRATION_HOURS`) e pedidos de cartão
-abandonados ou recusados sem nova tentativa expiram de duas formas
-combinadas, sem depender de infraestrutura paga:
-
-1. **Ao acessar**: toda vez que a página do pedido é aberta, o servidor
-   confere o prazo e expira na hora, liberando o estoque.
-2. **Varredura agendada**: a rota `GET /api/cron/expire-orders` (protegida
-   por `CRON_SECRET` no header `Authorization: Bearer <CRON_SECRET>`) expira
-   em lote todos os pedidos vencidos e envia o lembrete de pagamento — cobre
-   o caso de ninguém acessar a página do pedido. O agendamento é o **Vercel
-   Cron** (`vercel.json`): roda **uma vez por dia, às 06:00 UTC (03:00 em
-   Brasília)**, que é o máximo do plano gratuito (Hobby). Basta a variável
-   `CRON_SECRET` existir no projeto da Vercel: a própria Vercel envia o header
-   de autorização. Não precisa de GitHub Actions.
-
-Pedidos de cartão **recusados** não liberam o estoque imediatamente — o
-cliente pode tentar outro cartão ou trocar para Pix sem perder a reserva;
-o estoque só volta se o pedido for abandonado além do prazo, estornado ou
-cancelado.
+O administrador **mais antigo** vira o **principal** na migração `0025`. Depois, o
+principal adiciona ou remove os outros (até 3) em **Admin → Administradores**.
+O telefone de contato do principal é editado em **Minha conta → Seus dados**.
 
 ## Variáveis de ambiente
 
-Veja `.env.example` para a lista completa. Resumo:
+Veja `.env.example`. Resumo (na Vercel: **Config** = visível/pública, **Secret** =
+escondida; só as `NEXT_PUBLIC_*` podem ser Config):
 
-| Variável | Onde é usada |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | cliente Supabase no navegador e no servidor (sujeito a RLS) |
-| `SUPABASE_SERVICE_ROLE_KEY` | `lib/supabase/admin.ts` — ignora RLS, só no servidor |
-| `PIX_KEY`, `PIX_MERCHANT_NAME`, `PIX_MERCHANT_CITY`, `PIX_EXPIRATION_HOURS` | gerador do payload Pix (`lib/pix/`) |
-| `NEXT_PUBLIC_MP_PUBLIC_KEY`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `MP_MAX_INSTALLMENTS` | integração Mercado Pago (`lib/mercadopago/`) — Payment Brick, criação de pagamento e validação do webhook |
-| `RESEND_API_KEY`, `ADMIN_NOTIFICATION_EMAIL` | e-mails transacionais (`lib/email/`) — hoje: pedido criado, novo pedido Pix, comprovante enviado, pagamento confirmado |
-| `NEXT_PUBLIC_SITE_URL` | links absolutos em e-mails e no BR Code do Pix |
-| `CRON_SECRET` | autoriza a rota `/api/cron/expire-orders` (varredura agendada que expira pedidos Pix e cartão vencidos) |
+| Variável | Para quê | Tipo |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase no navegador e no servidor (sujeito a RLS) | Config |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase ignorando RLS, só no servidor | Secret |
+| `NEXT_PUBLIC_SITE_URL` | Links absolutos (e-mails, redefinição de senha, QR do Pix). Sem `/` no final | Config |
+| `PIX_KEY`, `PIX_MERCHANT_NAME`, `PIX_MERCHANT_CITY` | Pix estático (padrão; o admin pode trocar em Configurações) | Secret |
+| `PIX_EXPIRATION_HOURS` | Prazo do Pix (padrão 24) | — |
+| `RESEND_API_KEY` | Envio de e-mails | Secret |
+| `ADMIN_NOTIFICATION_EMAIL` | E-mail dos avisos de pedido (**o da administradora**) | Secret |
+| `EMAIL_FROM` | Remetente. Vazio = `onboarding@resend.dev` (só entrega ao dono da conta Resend) | — |
+| `CRON_SECRET` | Autoriza a rota do agendamento. **Só caracteres ASCII** (use o gerador abaixo) | Secret |
+| `CARD_PAYMENTS_ENABLED` | `true` liga o cartão (2ª fase). Vazio = só Pix | — |
+| `NEXT_PUBLIC_MP_PUBLIC_KEY`, `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `MP_MAX_INSTALLMENTS` | Mercado Pago (2ª fase) | — |
 
-## Rodando o projeto
+Gerar um `CRON_SECRET` seguro (só números e letras):
 
 ```bash
-npm run dev      # servidor de desenvolvimento (http://localhost:3000)
-npm run build    # build de produção
-npm run lint      # ESLint
-npx tsc --noEmit  # verificação de tipos
-npm run test      # testes unitários (Vitest)
-npm run test:integration  # testes de integração — exige um Supabase de teste, ver seção Testes
+node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
 ```
 
-`npm run lint` e a verificação de tipos devem passar sem erros antes de
-qualquer entrega.
+> ⚠️ **Já aconteceu:** um `CRON_SECRET` com caractere acentuado (`ê`) fez a Vercel
+> recusar **todos** os deploys em 3 a 5 segundos, com a mensagem *"The CRON_SECRET
+> environment variable contains characters that are not valid in HTTP headers"*,
+> porque o Vercel Cron envia o valor num cabeçalho HTTP. Depois de trocar uma
+> variável, é preciso fazer **Redeploy**.
 
-## Testes
+## E-mails (Resend)
 
-Testes unitários com [Vitest](https://vitest.dev) (`npm run test`), construídos
-junto com cada funcionalidade. Hoje cobrem:
+Há dois limites do **modo de teste** do Resend (remetente `onboarding@resend.dev`):
+1. ele só entrega ao **e-mail com o qual a conta Resend foi criada** — por isso a conta
+   deve ser a do dono da loja (`chrysstoreapp@gmail.com`), e não a do desenvolvedor;
+2. **clientes não recebem e-mails** (pedido recebido, pagamento confirmado,
+   redefinição de senha) até haver um **domínio próprio verificado** no Resend e a
+   variável `EMAIL_FROM` apontar para ele.
 
-- `lib/validations/cpf.ts` — validação de CPF por dígito verificador
-- `lib/validations/checkout.ts` — normalização e rejeição de payload de checkout
-- `lib/utils/format.ts` — formatação de moeda e CEP
-- `lib/pix/crc16.ts` — CRC-16/CCITT-FALSE contra o vetor de teste padrão
-  (`"123456789"` → `29B1`) do catálogo de CRCs
-- `lib/pix/payload.ts` — geração do BR Code: CRC embutido confere com o
-  recalculado de forma independente, ordem e conteúdo dos campos EMV,
-  truncamento/remoção de acentos do nome e cidade do recebedor, txid
-  alfanumérico
-- `lib/mercadopago/verify-webhook-signature.ts` — assinatura HMAC calculada
-  manualmente nos testes (mesmo algoritmo documentado pelo Mercado Pago)
-  para confirmar que uma assinatura válida é aceita e que payload
-  adulterado, segredo errado, header ausente ou timestamp fora da janela
-  de tolerância são rejeitados
-- `lib/email/escape-html.ts` — e-mails são HTML por interpolação de string
-  (não passam pelo escape automático do React); o teste confirma que
-  `<`, `>`, `&`, aspas são escapados antes de entrar no template
-- `lib/utils/safe-extension.ts` — extensão de arquivo extraída com
-  segurança do nome original enviado pelo usuário (upload de comprovante
-  Pix e de fotos de produto), rejeitando tentativas de path traversal
-  (ex. `evil.png/../../x`)
+E-mails enviados hoje: pedido criado, novo pedido Pix, comprovante enviado (com o
+arquivo anexado), pagamento confirmado, lembrete de pagamento, Fale Conosco (um
+e-mail por administrador, para um não bloquear o outro) e redefinição de senha.
+O envio é "melhor esforço": se falhar, o pedido e a mensagem continuam salvos e o
+painel **Mensagens** mostra o motivo.
 
-### Testes de integração (banco real)
+> O e-mail de **confirmação de cadastro** é o do Supabase Auth (remetente `noreply`
+> do Supabase, com limite baixo de envios por hora). Para produção, configure o SMTP
+> do Resend em **Authentication → SMTP Settings** depois de ter o domínio.
 
-`tests/integration/order-lifecycle.integration.test.ts` cobre, contra um
-projeto Supabase real com as migrações aplicadas:
+## Pix
 
-- o total do pedido é recalculado a partir do preço no banco;
-- dois checkouts simultâneos pela última unidade — só um ganha, o outro
-  recebe `insufficient_stock`;
-- expiração de um pedido Pix vencido libera o estoque reservado;
-- uma notificação de pagamento Mercado Pago duplicada não reprocessa o
-  pedido (idempotência);
-- RLS impede que um usuário anônimo leia `audit_log` ou `mercadopago_payments`.
+- **Estático** (1ª fase): o QR Code usa a chave Pix da loja (normalizada: telefone vira
+  `+55…`). O cliente paga, envia o comprovante e o administrador confirma em
+  `/admin/pedidos`.
+- **Automático** (2ª fase, via Mercado Pago): com `MP_ACCESS_TOKEN` configurado, o pedido
+  Pix é criado na API (QR único, vencimento igual ao do pedido) e o webhook
+  `/api/webhooks/mercadopago` o confirma sozinho. Falhando, cai no Pix estático.
 
-**Importante**: esses testes nunca foram executados contra um banco real
-— foram escritos e revisados com cuidado, mas eu não tinha acesso a um
-projeto Supabase configurado nesta sessão para rodá-los de verdade. Rode-os
-você mesmo contra um **projeto Supabase dedicado a testes** (nunca o de
-produção) antes de confiar neles:
+## Expiração automática de pedidos
+
+Pedidos Pix vencidos e pedidos de cartão abandonados são expirados (liberando o estoque)
+de duas formas combinadas:
+
+1. **Ao acessar**: abrir a página do pedido já expira o que venceu.
+2. **Varredura agendada**: o **Vercel Cron** (`vercel.json`) chama
+   `GET /api/cron/expire-orders` **uma vez por dia, às 06:00 UTC (03:00 em Brasília)**,
+   o máximo do plano Hobby. A rota exige `Authorization: Bearer <CRON_SECRET>` (a Vercel
+   envia sozinha quando `CRON_SECRET` existe no projeto) e também envia o lembrete de
+   pagamento do dia seguinte.
+
+## Versão fixa
+
+A versão do aplicativo é **1.2.0** e **não deve mudar** a cada deploy, correção ou
+funcionalidade: é uma decisão do dono do projeto. Ela vive em `lib/app-version.ts` (exibida
+em "Sobre") e o `package.json` acompanha — um teste (`lib/app-version.test.ts`) falha se
+divergirem. Mudanças novas entram na seção "1.2.0 (versão atual)" do CHANGELOG. Só se cria
+outra versão quando o dono pedir expressamente.
+
+## Rodando e testando
 
 ```bash
-SUPABASE_TEST_URL=https://xxxx.supabase.co \
-SUPABASE_TEST_SERVICE_ROLE_KEY=eyJ... \
-SUPABASE_TEST_ANON_KEY=eyJ... \
+npm run dev               # desenvolvimento
+npm run build             # build de produção (deve compilar sem erros)
+npm run lint              # ESLint
+npx tsc --noEmit          # tipos
+npm test                  # testes unitários (Vitest)
+npm run test:integration  # exige um Supabase de TESTE (ver abaixo)
+```
+
+Hoje: **134 testes unitários passando**. Cobrem, entre outros: CPF, checkout, formatação
+(moeda, CEP, telefone, datas em Brasília), CRC16 e BR Code do Pix, assinatura do webhook,
+escape de HTML nos e-mails, extensão segura de arquivos, frete (zonas, Correios, entrega
+local por raio, motoboy), regras de cupom (nome, 30%, uso), filtro de palavrões, contato,
+senha e redefinição, presença "online agora", compressão do comprovante e a versão fixa.
+
+**Testes de integração** (`tests/integration/`) foram escritos mas **nunca executados** contra
+um banco real. Rode-os só contra um projeto Supabase **dedicado a testes**:
+
+```bash
+SUPABASE_TEST_URL=... SUPABASE_TEST_SERVICE_ROLE_KEY=... SUPABASE_TEST_ANON_KEY=... \
 npm run test:integration
 ```
 
-Se algo não bater com o schema na primeira execução, é esperado — ajuste
-e me avise o que encontrar.
+## Segurança
 
-## Revisão de segurança
+Revisão feita por leitura de código (não por ataque real). Resumo:
+- Toda rota e Server Action administrativa passa por `requireAdmin()` (o principal, em
+  ações de administradores, por `requirePrimaryAdmin()`).
+- Funções SQL `security definer` fixam o `search_path` e liberam execução só à `service_role`.
+- RLS em todas as tabelas; `contact_messages`, `mercadopago_payments` e `audit_log` só
+  o administrador lê.
+- E-mails escapam HTML; uploads usam extensão validada; sem `dangerouslySetInnerHTML`.
+- Cabeçalhos de segurança e CSP em `next.config.ts` (inclui `wss://*.supabase.co` para o
+  Realtime e os domínios do Mercado Pago).
+- Limites de tentativas (login, cadastro, checkout, cupom, Fale Conosco, redefinição de senha).
+- **Redefinição de senha**: resposta idêntica exista ou não a conta; token de uso único,
+  consumido só ao enviar a senha nova (não ao abrir o link).
+- **Presença "online agora"** é anônima: só a área do site, nunca URL, nome ou e-mail.
+- O redirecionamento pós-login só aceita caminhos do próprio site.
 
-Revisão de código feita na Etapa 8 (sem acesso a um ambiente real para
-testar, então é revisão estática — "parece certo ao reler o código e as
-políticas de RLS", não "testado contra um ataque real"). O que foi
-conferido e, nos dois primeiros itens, corrigido:
+## Deploy (Vercel)
 
-- **Injeção de HTML em e-mail**: o nome do cliente no checkout entrava
-  direto no HTML do e-mail de notificação ao admin, sem escape — corrigido
-  com `lib/email/escape-html.ts`, usado em todos os templates.
-- **Path traversal no upload de arquivos**: a extensão do arquivo era
-  extraída de forma ingênua (`nome.split(".").pop()`); um nome como
-  `evil.png/../../x` (sem ponto final) escapava do padrão esperado.
-  Corrigido com `lib/utils/safe-extension.ts` (allowlist de caracteres),
-  usado no upload de comprovante Pix e de fotos de produto.
-- **Imagens do Supabase Storage bloqueadas pelo `next/image`**: o
-  `remotePatterns` só liberava `picsum.photos` (usado no seed) — fotos
-  reais de produto, vindas do bucket do Supabase, seriam bloqueadas em
-  produção. Corrigido em `next.config.ts`.
-- **Cabeçalhos de segurança**: `X-Frame-Options`, `X-Content-Type-Options`,
-  `Referrer-Policy`, `Strict-Transport-Security` e `Content-Security-Policy`
-  adicionados em `next.config.ts` (testado localmente com `next start` —
-  os 5 cabeçalhos aparecem corretamente).
-  **[REVISAR]** A CSP libera os domínios documentados do Mercado Pago para
-  o Payment Brick funcionar (`sdk.mercadopago.com`, `http2.mlstatic.com`,
-  `api.mercadopago.com`, `www.mercadopago.com(.br)`). Isso não foi testado
-  contra um checkout real — se o cartão não carregar em produção, confira
-  o console do navegador por bloqueios de CSP primeiro.
-- **Toda rota e Server Action administrativa** passa por `requireAdmin()`,
-  verificado ponto a ponto (10 arquivos em `lib/admin/`).
-- **Toda função SQL `security definer`** fixa `search_path = public`
-  (evita um ataque clássico de hijacking de search_path) e tem
-  `revoke/grant` explícito restringindo a execução à `service_role`.
-- Nenhuma SQL dinâmica (`EXECUTE`) em nenhuma migração — sem superfície de
-  SQL injection nas funções do banco.
-- Nenhum `dangerouslySetInnerHTML` no código — XSS nas páginas do site em
-  si é mitigado pelo escape automático do React; o único lugar com HTML
-  por string eram os e-mails, já corrigido acima.
-- Chave `service_role` só é referenciada em `lib/supabase/admin.ts`
-  (guardado por `import "server-only"`, que quebra o build se um Client
-  Component importar esse módulo).
-- CSRF nas Server Actions é tratado pelo próprio Next.js (checagem de
-  `Origin` automática); não há rotas de API tradicionais recebendo POST de
-  formulário HTML além do webhook (protegido por assinatura) e do cron
-  (protegido por secret).
+1. Repositório no GitHub (privado) importado na Vercel; framework Next.js, build padrão.
+2. Cadastre as variáveis de [Variáveis de ambiente](#variáveis-de-ambiente) (valores de produção).
+3. A cada `git push` na `main` a Vercel faz o deploy; **variável alterada só vale após
+   Redeploy**.
+4. Supabase: aplique as migrações antes de publicar código que dependa delas (ex.: o código
+   da `0025` lê `profiles.is_primary_admin`).
+5. O Cron já está em `vercel.json` (confira em **Settings → Cron Jobs**).
 
-**Gaps conhecidos, não implementados** (fora do que a especificação
-pedia, mas vale registrar):
-- Sem fluxo de "esqueci minha senha" — a especificação não pediu
-  explicitamente, mas é esperado em produção real.
-- CSP e lista de domínios do Mercado Pago não validados contra um
-  checkout real (ver acima).
-- Testes de integração escritos mas não executados (ver
-  [Testes de integração](#testes-de-integração-banco-real)).
+Detalhes operacionais, diagnósticos e pendências em [docs/operacao.md](docs/operacao.md).
 
-## Deploy
+## Antes de divulgar a loja
 
-### Netlify ou Cloudflare Pages
-
-1. Suba o código para um repositório Git (GitHub/GitLab/Bitbucket).
-2. Crie o site no [Netlify](https://app.netlify.com) ou no
-   [Cloudflare Pages](https://dash.cloudflare.com) e conecte o repositório.
-   Ambos detectam Next.js automaticamente; comando de build:
-   `npm run build`. Não defina diretório de publicação manual — o
-   runtime de cada plataforma cuida disso.
-3. Configure **todas** as variáveis de `.env.example` no painel de
-   variáveis de ambiente da plataforma, com valores de **produção**
-   (nunca os valores fictícios de `.env.local`):
-   - Supabase: URL/chaves do projeto de produção (rode as migrações nele
-     também, como em [Configuração do Supabase](#configuração-do-supabase)).
-   - Mercado Pago: troque as credenciais de **teste** pelas de
-     **produção** só depois de validar o fluxo completo no sandbox.
-   - `NEXT_PUBLIC_SITE_URL`: o domínio final (ex. `https://chrysstore.com.br`).
-4. No painel do Mercado Pago, atualize a URL do webhook para
-   `https://<seu-domínio>/api/webhooks/mercadopago`.
-5. A varredura de expiração de pedidos já está agendada pelo **Vercel Cron**
-   (`vercel.json`, uma vez por dia). Só confirme que a variável `CRON_SECRET`
-   existe no projeto da Vercel (o valor é qualquer texto longo e aleatório).
-6. HTTPS é automático em ambas as plataformas; o `Strict-Transport-Security`
-   já configurado em `next.config.ts` reforça isso.
-
-### Antes de ir ao ar, de verdade
-
-- [ ] Rodar as migrações no projeto Supabase de **produção** (não o de
-      testes).
-- [ ] Preencher os dados reais da empresa em `/admin/configuracoes`
-      (os textos legais e o rodapé mostram `[REVISAR]` até isso acontecer).
-- [ ] Verificar um domínio no Resend e definir a variável de ambiente
-      `EMAIL_FROM` (ex.: `Chrys Store <pedidos@seudominio.com.br>`).
-- [ ] Trocar as credenciais do Mercado Pago de teste para produção.
-- [ ] Testar um pagamento Pix e um pagamento no cartão de ponta a ponta.
-- [ ] Promover o primeiro usuário admin (ver
-      [Como tornar um usuário admin](#como-tornar-um-usuário-admin)).
-
-## Status do projeto
-
-Etapas da especificação original e progresso:
-
-- [x] 1. Arquitetura e modelo de dados ([docs/arquitetura.md](docs/arquitetura.md))
-- [x] 2. Setup do projeto, banco, migrações e autenticação
-- [x] 3. Catálogo, carrinho e checkout
-- [x] 4. Pagamento Pix estático
-- [x] 5. Pagamento Mercado Pago
-- [x] 6. Painel administrativo
-- [x] 7. Páginas legais, e-mails e acabamento visual
-- [x] 8. Testes finais, revisão de segurança e README final
+- [ ] Trocar os dados da empresa, fotos e preços dos produtos (previsto em até 72 h).
+- [ ] Telefone do administrador principal: **19 97423-0904** (Minha conta → Seus dados, ou SQL
+      em [docs/operacao.md](docs/operacao.md)).
+- [ ] Teste real de compra Pix (a cargo do dono, após o deploy).
+- [ ] Domínio próprio verificado no Resend + `EMAIL_FROM` (para clientes receberem e-mails)
+      e SMTP do Resend no Supabase Auth (confirmação de cadastro).
+- [ ] Revisar os trechos `[REVISAR]` das páginas legais.

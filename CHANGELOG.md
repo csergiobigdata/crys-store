@@ -6,6 +6,11 @@
 
 ## 1.2.0 (versão atual) — alterações mais recentes
 
+- Documentação revista: `README.md` reescrito, novo `docs/operacao.md` (guia de operação) e
+  capítulo 7 em `docs/arquitetura.md` com tudo o que mudou desde a especificação.
+- Removido o workflow `.github/workflows/expire-orders.yml` (GitHub Actions, a cada 15 min): foi substituído pelo
+  Vercel Cron e, sem os secrets configurados, falharia a cada execução.
+- `.env.example`: aviso de que `CRON_SECRET` deve ser só ASCII (causa de falhas de deploy já vista).
 - "Esqueci minha senha": link no login, e-mail com link de uso único (1 hora) enviado pelo
   Resend e página para criar a nova senha.
 - Expiração automática de pedidos pelo Vercel Cron (`vercel.json`), uma vez por dia.
