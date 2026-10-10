@@ -61,7 +61,7 @@ export default function HomePage() {
                 escolhidos a dedo.{" "}
                 {cardEnabled
                   ? "Pague no Pix ou no cartão, em até 6x."
-                  : "Pague no Pix. O cartão de crédito em até 6x ainda não está liberado, mas em breve você poderá comprar assim."}
+                  : "Pague no Pix ou no cartão, em até 6x (em breve disponível)."}
               </p>
             </AnimatedSection>
             <AnimatedSection delay={0.3}>
@@ -139,7 +139,7 @@ export default function HomePage() {
             <h2 className="font-display text-3xl font-semibold text-white">
               {cardEnabled
                 ? "Pix com confirmação rápida ou cartão em até 6x"
-                : "Compre agora no Pix — cartão em até 6x em breve"}
+                : "Pix com confirmação rápida ou cartão em até 6x (em breve)"}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-white/90">
               {cardEnabled
