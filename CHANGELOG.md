@@ -10,6 +10,8 @@
   Resend e página para criar a nova senha.
 - Expiração automática de pedidos pelo Vercel Cron (`vercel.json`), uma vez por dia.
 - Versão fixa do aplicativo em 1.2.0.
+- Cartão em até 6x: enquanto `CARD_PAYMENTS_ENABLED` não for ligado, a página inicial, o checkout e
+  os Termos avisam que o cartão ainda não está liberado e que em breve estará.
 - Login: depois de entrar, abre a página inicial (e não mais "Minha conta"); o redirecionamento
   só aceita caminhos do próprio site.
 

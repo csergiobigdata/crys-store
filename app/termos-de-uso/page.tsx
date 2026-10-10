@@ -60,8 +60,9 @@ export default async function TermsOfUsePage() {
         </li>
         <li>
           Aceitamos pagamento via Pix (com confirmação verificada pela
-          nossa equipe) e cartão de crédito, processado pelo Mercado Pago.
-          Não armazenamos dados de cartão em nossos servidores.
+          nossa equipe). O pagamento no cartão de crédito, processado pelo
+          Mercado Pago, ainda não está liberado e será disponibilizado em
+          breve. Não armazenamos dados de cartão em nossos servidores.
         </li>
         <li>
           A disponibilidade de estoque é confirmada no momento da compra; em

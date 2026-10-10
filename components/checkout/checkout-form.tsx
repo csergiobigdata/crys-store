@@ -433,11 +433,30 @@ export function CheckoutForm({
               <input type="radio" name="paymentMethod" value="pix" defaultChecked />
               Pix — QR Code gerado na hora, confirmação em até 24h
             </label>
-            {cardEnabled && (
+            {cardEnabled ? (
               <label className="flex items-center gap-3 rounded-lg border border-rose/30 p-4 text-sm">
                 <input type="radio" name="paymentMethod" value="cartao" />
                 Cartão de crédito — em até 6x, processado pelo Mercado Pago
               </label>
+            ) : (
+              <div
+                aria-disabled="true"
+                className="flex items-start gap-3 rounded-lg border border-dashed border-rose/30 bg-rose-light/20 p-4 text-sm text-plum-soft"
+              >
+                <input type="radio" disabled className="mt-1" aria-label="Cartão de crédito (em breve)" />
+                <span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    Cartão de crédito — em até 6x
+                    <span className="rounded-full bg-rose px-2 py-0.5 text-[11px] font-semibold text-white">
+                      Em breve
+                    </span>
+                  </span>
+                  <span className="mt-1 block text-xs">
+                    O parcelamento no cartão ainda não está liberado, mas em breve você poderá
+                    comprar assim. Por enquanto, finalize a compra pelo Pix.
+                  </span>
+                </span>
+              </div>
             )}
           </div>
         </section>

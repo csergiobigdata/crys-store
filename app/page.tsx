@@ -9,15 +9,21 @@ import {
 import Image from "next/image";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { ButtonLink } from "@/components/ui/button";
+import { isCardPaymentEnabled } from "@/lib/mercadopago/card-enabled";
 
-const trustBadges = [
-  { icon: CreditCard, label: "Pix ou cartão em até 6x" },
+const trustBadges = (cardEnabled: boolean) => [
+  {
+    icon: CreditCard,
+    label: cardEnabled ? "Pix ou cartão em até 6x" : "Pix agora · cartão em até 6x em breve",
+  },
   { icon: Truck, label: "Entrega para todo o Brasil" },
   { icon: RotateCcw, label: "7 dias para troca ou devolução" },
   { icon: ShieldCheck, label: "Compra 100% segura" },
 ];
 
 export default function HomePage() {
+  const cardEnabled = isCardPaymentEnabled();
+
   return (
     <>
       <section className="relative overflow-hidden bg-gradient-to-br from-rose-light via-blush to-sky-light">
@@ -52,7 +58,10 @@ export default function HomePage() {
             <AnimatedSection delay={0.2}>
               <p className="mt-6 max-w-md text-base text-plum-soft sm:text-lg">
                 Acessórios, itens de casa e decoração e kits de presente
-                escolhidos a dedo. Pague no Pix ou no cartão, em até 6x.
+                escolhidos a dedo.{" "}
+                {cardEnabled
+                  ? "Pague no Pix ou no cartão, em até 6x."
+                  : "Pague no Pix. O cartão de crédito em até 6x ainda não está liberado, mas em breve você poderá comprar assim."}
               </p>
             </AnimatedSection>
             <AnimatedSection delay={0.3}>
@@ -100,7 +109,7 @@ export default function HomePage() {
 
       <section className="bg-white">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-8 sm:px-6 md:grid-cols-4 lg:px-8">
-          {trustBadges.map(({ icon: Icon, label }, index) => (
+          {trustBadges(cardEnabled).map(({ icon: Icon, label }, index) => (
             <div
               key={label}
               className="flex items-center gap-3 rounded-2xl bg-blush p-3 text-sm font-medium text-plum-soft"
@@ -128,12 +137,14 @@ export default function HomePage() {
         <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-6 px-4 py-16 text-center sm:px-6 lg:px-8">
           <AnimatedSection>
             <h2 className="font-display text-3xl font-semibold text-white">
-              Pix com confirmação rápida ou cartão em até 6x
+              {cardEnabled
+                ? "Pix com confirmação rápida ou cartão em até 6x"
+                : "Compre agora no Pix — cartão em até 6x em breve"}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-white/90">
-              Escolha a forma de pagamento que preferir no checkout. QR Code
-              Pix gerado na hora ou cartão de crédito processado com
-              segurança pelo Mercado Pago.
+              {cardEnabled
+                ? "Escolha a forma de pagamento que preferir no checkout. QR Code Pix gerado na hora ou cartão de crédito processado com segurança pelo Mercado Pago."
+                : "O pagamento é feito por Pix, com QR Code gerado na hora. O parcelamento no cartão de crédito em até 6x ainda não está liberado, mas em breve você poderá comprar com ele."}
             </p>
           </AnimatedSection>
           <AnimatedSection delay={0.1}>

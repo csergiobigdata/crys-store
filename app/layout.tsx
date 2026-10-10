@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Chrys Store",
   },
   description:
-    "Chrys Store — joias artesanais, caixas de presente, decorações e bijuterias com entrega para todo o Brasil. Pague no Pix ou no cartão de crédito.",
+    "Chrys Store — joias artesanais, caixas de presente, decorações e bijuterias com entrega para todo o Brasil. Pague no Pix (cartão de crédito em breve).",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
