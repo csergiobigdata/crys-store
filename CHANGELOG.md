@@ -10,6 +10,8 @@
   Resend e página para criar a nova senha.
 - Expiração automática de pedidos pelo Vercel Cron (`vercel.json`), uma vez por dia.
 - Versão fixa do aplicativo em 1.2.0.
+- Login: depois de entrar, abre a página inicial (e não mais "Minha conta"); o redirecionamento
+  só aceita caminhos do próprio site.
 
 ## Histórico anterior (numeração antiga, antes de a versão ficar fixa)
 

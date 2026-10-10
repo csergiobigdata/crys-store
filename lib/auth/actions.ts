@@ -67,11 +67,17 @@ export async function login(
     return { error: "E-mail ou senha incorretos." };
   }
 
+  // Depois de entrar, vai para a página inicial — ou para onde a pessoa estava indo
+  // (ex.: /checkout). Só aceita caminhos do próprio site: "//" e "/\\" abririam
+  // outro endereço (redirecionamento aberto).
   const redirectParam = formData.get("redirect");
   const redirectTo =
-    typeof redirectParam === "string" && redirectParam.startsWith("/")
+    typeof redirectParam === "string" &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//") &&
+    !redirectParam.startsWith("/\\")
       ? redirectParam
-      : "/minha-conta";
+      : "/";
 
   redirect(redirectTo);
 }
