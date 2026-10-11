@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { GeneralSettingsForm } from "@/components/admin/settings/general-settings-form";
+import { SalesPauseForm } from "@/components/admin/settings/sales-pause-form";
 import { LocalDeliveryForm } from "@/components/admin/settings/local-delivery-form";
 import { getLocalDeliveryConfig } from "@/lib/orders/local-delivery-server";
+import { areSalesPaused } from "@/lib/site/sales-status";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Configurações — Admin" };
@@ -13,6 +15,7 @@ export default async function AdminSettingsPage() {
 
   const settingsByKey = new Map((settings ?? []).map((s) => [s.key, s.value]));
   const localDelivery = await getLocalDeliveryConfig();
+  const salesPaused = await areSalesPaused();
 
   // Chave Pix cadastrada pelo admin; se ainda não houver, sugere a do .env.
   const storedPix = settingsByKey.get("pix_config") as
@@ -29,6 +32,16 @@ export default async function AdminSettingsPage() {
       <h1 className="font-display text-3xl font-semibold text-plum">
         Configurações
       </h1>
+
+      <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
+        <h2 className="font-display text-lg text-plum">Vendas</h2>
+        <p className="mt-1 text-sm text-plum-soft">
+          Ao pausar, os clientes continuam navegando pelos produtos e podem escrever pelo Fale
+          Conosco, mas não conseguem comprar. Um aviso aparece em todo o site. Você pode liberar
+          a qualquer momento.
+        </p>
+        <SalesPauseForm paused={salesPaused} />
+      </section>
 
       <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
         <GeneralSettingsForm

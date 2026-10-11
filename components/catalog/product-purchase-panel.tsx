@@ -20,7 +20,7 @@ export function ProductPurchasePanel({
   basePrice: number;
   variants: Variant[];
 }) {
-  const { addItem } = useCart();
+  const { addItem, salesPaused } = useCart();
 
   const attributeOptions = useMemo(() => {
     const map = new Map<string, Set<string>>();
@@ -52,7 +52,7 @@ export function ProductPurchasePanel({
   const maxQuantity = currentVariant ? Math.min(currentVariant.stockQuantity, 10) : 0;
 
   function handleAddToCart() {
-    if (!currentVariant || outOfStock) return;
+    if (!currentVariant || outOfStock || salesPaused) return;
     addItem(currentVariant.id, quantity);
     setFeedback("Adicionado ao carrinho!");
     setTimeout(() => setFeedback(null), 2500);
@@ -123,10 +123,10 @@ export function ProductPurchasePanel({
         type="button"
         size="lg"
         className="mt-6 w-full"
-        disabled={outOfStock}
+        disabled={outOfStock || salesPaused}
         onClick={handleAddToCart}
       >
-        {outOfStock ? "Esgotado" : "Adicionar ao carrinho"}
+        {salesPaused ? "Vendas pausadas" : outOfStock ? "Esgotado" : "Adicionar ao carrinho"}
       </Button>
 
       {feedback && (

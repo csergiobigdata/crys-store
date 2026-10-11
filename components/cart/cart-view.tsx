@@ -11,7 +11,7 @@ import { type CartLineDetails, MAX_QUANTITY_PER_ITEM } from "@/lib/cart/types";
 import { formatCurrency } from "@/lib/utils/format";
 
 export function CartView({ isAdmin = false }: { isAdmin?: boolean }) {
-  const { lines, hydrated, setQuantity, removeItem, clear } = useCart();
+  const { lines, hydrated, salesPaused, setQuantity, removeItem, clear } = useCart();
   const [emptying, setEmptying] = useState(false);
   const [emptyError, setEmptyError] = useState<string | null>(null);
   const [catalog, setCatalog] = useState<CartLineDetails[]>([]);
@@ -169,9 +169,15 @@ export function CartView({ isAdmin = false }: { isAdmin?: boolean }) {
         <p className="mt-1 text-xs text-plum-soft">
           Frete e descontos são calculados no próximo passo.
         </p>
-        <ButtonLink href="/checkout" size="lg" className="mt-6 w-full">
-          Ir para o checkout
-        </ButtonLink>
+        {salesPaused ? (
+          <p className="mt-6 rounded-lg bg-rose-light/50 px-3 py-2 text-sm text-plum" role="status">
+            As vendas estão pausadas temporariamente. Não é possível finalizar a compra agora.
+          </p>
+        ) : (
+          <ButtonLink href="/checkout" size="lg" className="mt-6 w-full">
+            Ir para o checkout
+          </ButtonLink>
+        )}
       </div>
     </div>
   );

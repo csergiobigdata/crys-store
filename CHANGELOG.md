@@ -6,6 +6,13 @@
 
 ## 1.3.0 (versão atual) — alterações mais recentes
 
+- Login: botão de olho para mostrar/ocultar a senha digitada (`components/ui/password-input.tsx`).
+- Meus pedidos: agora lista os produtos de cada pedido, separados em "Pedidos em andamento" e
+  "Compras anteriores" (entregue, cancelado, expirado, recusado, estornado).
+- Configurações > Vendas: o administrador pode pausar e liberar as vendas a qualquer momento. Pausadas,
+  o site mostra um aviso (com Fale Conosco e telefone), o cliente continua navegando, mas não adiciona
+  ao carrinho, não abre o checkout e `createOrder` recusa o pedido. Guardado em `app_settings`
+  (chave `sales_paused`); registrado na auditoria. Pedidos já criados ainda podem ser pagos.
 - Painel administrativo: o card "Pedidos ativos" passa a contar só os pedidos que não foram
   cancelados (antes contava todos).
 - Sessão por inatividade: depois de 15 minutos sem mouse, teclado, rolagem ou toque, o usuário

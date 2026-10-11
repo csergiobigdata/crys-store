@@ -26,6 +26,8 @@ type CartContextValue = {
   lines: CartLine[];
   itemCount: number;
   hydrated: boolean;
+  /** Administrador pausou as vendas: o cliente só navega. */
+  salesPaused: boolean;
   addItem: (variantId: string, quantity: number) => void;
   setQuantity: (variantId: string, quantity: number) => void;
   removeItem: (variantId: string) => void;
@@ -82,9 +84,11 @@ function mergeLines(a: CartLine[], b: CartLine[]): CartLine[] {
 
 export function CartProvider({
   isLoggedIn,
+  salesPaused,
   children,
 }: {
   isLoggedIn: boolean;
+  salesPaused: boolean;
   children: ReactNode;
 }) {
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -198,8 +202,8 @@ export function CartProvider({
   );
 
   const value = useMemo(
-    () => ({ lines, itemCount, hydrated, addItem, setQuantity, removeItem, clear }),
-    [lines, itemCount, hydrated, addItem, setQuantity, removeItem, clear],
+    () => ({ lines, itemCount, hydrated, salesPaused, addItem, setQuantity, removeItem, clear }),
+    [lines, itemCount, hydrated, salesPaused, addItem, setQuantity, removeItem, clear],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

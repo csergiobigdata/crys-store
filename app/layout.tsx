@@ -6,7 +6,10 @@ import { Header } from "@/components/layout/header";
 import { CookieBanner } from "@/components/legal/cookie-banner";
 import { IdleLogout } from "@/components/site/idle-logout";
 import { PresenceTracker } from "@/components/site/presence-tracker";
+import { SalesPausedNotice } from "@/components/site/sales-paused-notice";
 import { getCurrentUser } from "@/lib/auth/session";
+import { getPrimaryAdminContact } from "@/lib/site/contact";
+import { areSalesPaused } from "@/lib/site/sales-status";
 import "./globals.css";
 
 const playfairDisplay = Playfair_Display({
@@ -36,7 +39,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const user = await getCurrentUser();
+  const [user, salesPaused] = await Promise.all([getCurrentUser(), areSalesPaused()]);
+  const primaryAdmin = salesPaused ? await getPrimaryAdminContact() : null;
 
   return (
     <html
@@ -45,8 +49,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${playfairDisplay.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        <CartProvider isLoggedIn={Boolean(user)}>
+        <CartProvider isLoggedIn={Boolean(user)} salesPaused={salesPaused}>
           <Header user={user} />
+          {salesPaused && <SalesPausedNotice phone={primaryAdmin?.phone ?? null} />}
           <main className="flex-1">{children}</main>
           <Footer />
           <CookieBanner />

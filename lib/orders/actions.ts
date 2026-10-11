@@ -14,6 +14,7 @@ import { createPixPaymentForOrder } from "@/lib/pix/create-payment";
 import { getPixExpirationHours } from "@/lib/pix/settings";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { areSalesPaused, SALES_PAUSED_ORDER_ERROR } from "@/lib/site/sales-status";
 import { type CheckoutInput, checkoutSchema } from "@/lib/validations/checkout";
 
 export type CheckoutFormState = { error: string } | undefined;
@@ -95,6 +96,8 @@ export async function createOrder(
   _prevState: CheckoutFormState,
   formData: FormData,
 ): Promise<CheckoutFormState> {
+  if (await areSalesPaused()) return { error: SALES_PAUSED_ORDER_ERROR };
+
   const ip = await clientIp();
   const allowed = await checkRateLimit({
     bucket: "checkout",
