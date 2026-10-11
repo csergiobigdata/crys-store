@@ -11,6 +11,9 @@
 - Sessão por inatividade: depois de 15 minutos sem mouse, teclado, rolagem ou toque, o usuário
   logado (cliente ou administrador) é desconectado e volta ao login, com aviso. A atividade vale
   para todas as abas abertas (`components/site/idle-logout.tsx`, ação `logoutIdle`).
+- Auditoria: novo módulo "Apagar o log de auditoria" (só administrador principal), com janela de
+  confirmação que exige digitar APAGAR. Fica gravado um único registro dizendo quem apagou e quantos
+  registros existiam (`lib/admin/audit-actions.ts`, `components/admin/clear-audit-log.tsx`).
 - Configurações: o "Nome do recebedor" do Pix aceita até 100 caracteres (antes 25). O QR Code/copia e
   cola continua limitado a 25 pelo padrão do Pix: o app corta o nome só dentro do código, sem acentos.
 - Nova página de **Ajuda** (`/ajuda`): perguntas e respostas sobre compra, pagamento, entrega e conta,

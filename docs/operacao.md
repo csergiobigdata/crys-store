@@ -109,6 +109,8 @@ commit;
   motoboy. A distância é em **linha reta**, por CEP (AwesomeAPI) ou pela rua (OpenStreetMap); se não for
   possível calcular, vale a taxa da faixa mais distante (nunca "grátis" por engano).
 - **Cupons** → nome (≤ 10), código (≤ 15), teto de 30% do valor dos produtos, uso único por cliente.
+- **Auditoria** → lista quem alterou o quê. O administrador **principal** pode apagar todo o log (digitando
+  APAGAR); sobra apenas um registro informando quem apagou e quantos registros existiam.
 - **Visão geral** → cards "Produtos ativos", "Comprovantes Pix em análise" e "Pedidos ativos" (não conta os
   cancelados).
 - **Sessão** → quem está logado (cliente ou administrador) é desconectado após 15 minutos sem usar o site e

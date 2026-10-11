@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ClearAuditLog } from "@/components/admin/clear-audit-log";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/utils/format";
 
@@ -23,6 +25,7 @@ const actionLabels: Record<string, string> = {
   update_local_delivery: "Atualizou a entrega local (frete)",
   create_shipping_rule: "Criou regra de frete",
   update_shipping_rule: "Editou regra de frete",
+  clear_audit_log: "Apagou o log de auditoria",
 };
 
 export default async function AdminAuditLogPage({
@@ -31,6 +34,7 @@ export default async function AdminAuditLogPage({
   searchParams: Promise<{ tipo?: string }>;
 }) {
   const { tipo } = await searchParams;
+  const admin = await requireAdmin();
 
   const supabase = await createClient();
   let query = supabase
@@ -116,6 +120,8 @@ export default async function AdminAuditLogPage({
           </p>
         )}
       </div>
+
+      {admin.isPrimaryAdmin && <ClearAuditLog total={(logs ?? []).length} />}
     </div>
   );
 }

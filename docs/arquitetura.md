@@ -551,6 +551,11 @@ Hoje são **25**. As de `0016` em diante:
 renderizada quando `getCurrentUser().role === "admin"`. Linkada no rodapé e no menu do usuário. Ao mudar um
 fluxo (pagamento, frete, painel), atualizar também os textos dessa página.
 
+### 7.6.2 Apagar o log de auditoria
+`clearAuditLogAction` (`lib/admin/audit-actions.ts`): `requirePrimaryAdmin`, confirmação digitada ("APAGAR"),
+`delete` de toda a tabela `audit_log` pela service role e novo registro `clear_audit_log` com a contagem apagada.
+UI em `components/admin/clear-audit-log.tsx`, no rodapé de `/admin/auditoria`.
+
 ### 7.7 Pix, comprovante e e-mails
 - Comprovante: seletor com arrastar/clicar e pré-visualização (`proof-file-picker.tsx`). O e-mail ao administrador
   leva o arquivo **anexado e reduzido** (`lib/pix/compress-proof.ts`, sharp: ≤ 1600 px, menor entre WebP/JPEG/PNG;
