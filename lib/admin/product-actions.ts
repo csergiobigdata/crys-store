@@ -115,12 +115,17 @@ export async function uploadProductImageAction(
     .select("id", { count: "exact", head: true })
     .eq("product_id", productId);
 
-  await supabase.from("product_images").insert({
+  const { error: insertError } = await supabase.from("product_images").insert({
     product_id: productId,
     url: publicUrlData.publicUrl,
     alt_text: altText,
     position: count ?? 0,
   });
+
+  if (insertError) {
+    await supabase.storage.from("product-images").remove([path]);
+    return { error: "Não foi possível salvar a imagem no produto. Tente novamente." };
+  }
 
   revalidatePath(`/admin/produtos/${productId}`);
   return undefined;

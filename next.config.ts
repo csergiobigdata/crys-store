@@ -55,6 +55,11 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  experimental: {
+    // Upload de foto de produto passa por Server Action (limite padrão: 1 MB);
+    // a action valida o teto real de 5 MB.
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   images: {
     remotePatterns: [
       {
