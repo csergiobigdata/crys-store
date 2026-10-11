@@ -24,7 +24,10 @@ async function getCounts() {
       .select("id", { count: "exact", head: true })
       .eq("payment_method", "pix")
       .eq("status", "em_analise"),
-    supabase.from("orders").select("id", { count: "exact", head: true }),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .neq("status", "cancelado"),
   ]);
 
   return {
@@ -97,7 +100,7 @@ export default async function AdminDashboardPage() {
       gradient: "from-[#7a2e9a] via-[#b0359f] to-[#e0457f]",
     },
     {
-      label: "Pedidos no total",
+      label: "Pedidos ativos",
       value: counts.totalOrders,
       href: "/admin/pedidos",
       gradient: "from-[#4a2a8f] via-[#6b2c82] to-[#2b7fb8]",

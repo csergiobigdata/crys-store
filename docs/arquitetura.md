@@ -480,7 +480,7 @@ estoque) é feita no servidor, nunca direto do navegador.
 
 ---
 
-## 7. Atualizações depois da especificação (versão 1.2.0)
+## 7. Atualizações depois da especificação (versão 1.3.0)
 
 Resumo do que foi acrescentado ou alterado em relação aos capítulos 1 a 6. Os nomes de arquivos
 são relativos à raiz do projeto.
@@ -537,9 +537,19 @@ Hoje são **25**. As de `0016` em diante:
 - **Esqueci minha senha**: `/esqueci-senha` → e-mail pelo **Resend** com link `/redefinir-senha?token_hash=…`
   (token gerado por `auth.admin.generateLink`); o token é consumido **ao enviar a nova senha**
   (`verifyOtp` + `updateUser`), nunca ao abrir a página.
+- **Sessão por inatividade**: `components/site/idle-logout.tsx` (montado em `app/layout.tsx` só para quem está
+  logado) desconecta após **15 min** sem mouse/teclado/rolagem/toque e chama `logoutIdle`
+  (`lib/auth/actions.ts`), que leva a `/entrar?expirou=1` (com aviso). O último momento de atividade fica no
+  `localStorage`, valendo para todas as abas.
+- Visão geral do painel: o card "Pedidos ativos" conta pedidos com status diferente de `cancelado`.
 - Depois do login abre a página inicial (ou o destino original, só se for caminho do próprio site).
 - `/minha-conta`: nome, apelido, telefone, dados de entrega. O nome no menu segue a regra: apelido; senão
   "Administrador" (admin) ou primeiro nome (cliente; nome de uma palavra = 10 primeiras letras).
+
+### 7.6.1 Ajuda
+`app/ajuda/page.tsx` (pública): FAQ em `<details>`, agrupada por assunto. A seção "Para administradores" só é
+renderizada quando `getCurrentUser().role === "admin"`. Linkada no rodapé e no menu do usuário. Ao mudar um
+fluxo (pagamento, frete, painel), atualizar também os textos dessa página.
 
 ### 7.7 Pix, comprovante e e-mails
 - Comprovante: seletor com arrastar/clicar e pré-visualização (`proof-file-picker.tsx`). O e-mail ao administrador
@@ -551,7 +561,7 @@ Hoje são **25**. As de `0016` em diante:
 ### 7.8 Agendamento e versão
 - **Vercel Cron** (`vercel.json`): `GET /api/cron/expire-orders` 1×/dia (06:00 UTC), autenticado por
   `Authorization: Bearer <CRON_SECRET>` (valor **só ASCII**). Substitui o workflow do GitHub Actions.
-- **Versão fixa 1.2.0** em `lib/app-version.ts` (exibida em "Sobre"); `package.json` acompanha, garantido por teste.
+- **Versão fixa 1.3.0** em `lib/app-version.ts` (exibida em "Sobre"); `package.json` acompanha, garantido por teste.
 
 ### 7.9 Presença "online agora"
 `components/site/presence-tracker.tsx` (todas as páginas, exceto `/admin`) anuncia **só a área** do site pelo

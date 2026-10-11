@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { APP_VERSION } from "./app-version";
 
 describe("versão fixa do aplicativo", () => {
-  it("é 1.2.0 (não muda a cada deploy)", () => {
-    expect(APP_VERSION).toBe("1.2.0");
+  it("é 1.3.0 (não muda a cada deploy)", () => {
+    expect(APP_VERSION).toBe("1.3.0");
   });
 
   it("o package.json acompanha a versão exibida em 'Sobre'", () => {

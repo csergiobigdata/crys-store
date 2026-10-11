@@ -20,7 +20,7 @@ modelo de dados, [arquitetura.md](arquitetura.md).
 | Telefone público | **19 97423-0904** | Em `profiles.phone` do principal |
 
 Decisões do dono que valem sempre:
-- A **versão do app é fixa em 1.2.0** (não criar versões nem tags a cada deploy).
+- A **versão do app é fixa em 1.3.0** (não criar versões nem tags a cada deploy).
 - **Mercado Pago (cartão e Pix automático) é a 2ª fase**: só será feito quando o dono pedir.
 - **Domínio próprio + Resend** ficam para depois (a cargo do dono).
 - Avisos da loja vão **para a administradora**, nunca para o e-mail do desenvolvedor.
@@ -109,7 +109,14 @@ commit;
   motoboy. A distância é em **linha reta**, por CEP (AwesomeAPI) ou pela rua (OpenStreetMap); se não for
   possível calcular, vale a taxa da faixa mais distante (nunca "grátis" por engano).
 - **Cupons** → nome (≤ 10), código (≤ 15), teto de 30% do valor dos produtos, uso único por cliente.
+- **Visão geral** → cards "Produtos ativos", "Comprovantes Pix em análise" e "Pedidos ativos" (não conta os
+  cancelados).
+- **Sessão** → quem está logado (cliente ou administrador) é desconectado após 15 minutos sem usar o site e
+  volta à tela de login.
 - **Visão geral → Online agora** → abas abertas por área do site (anônimo).
+
+- **Ajuda** (`/ajuda`) → perguntas e respostas para clientes e, para admins, passo a passo do painel. Os textos
+  ficam em `app/ajuda/page.tsx`; revisar quando algo mudar (ex.: ao liberar o cartão).
 
 ## 5. E-mails
 

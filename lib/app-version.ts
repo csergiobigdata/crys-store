@@ -5,4 +5,4 @@
  * correção. Só deve ser alterada se o dono pedir expressamente uma nova versão
  * (o teste em app-version.test.ts garante que package.json acompanhe este valor).
  */
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.3.0";

@@ -4,6 +4,7 @@ import { CartProvider } from "@/components/cart/cart-provider";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { CookieBanner } from "@/components/legal/cookie-banner";
+import { IdleLogout } from "@/components/site/idle-logout";
 import { PresenceTracker } from "@/components/site/presence-tracker";
 import { getCurrentUser } from "@/lib/auth/session";
 import "./globals.css";
@@ -49,6 +50,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <main className="flex-1">{children}</main>
           <Footer />
           <CookieBanner />
+          {user && <IdleLogout />}
           <PresenceTracker isLoggedIn={Boolean(user)} />
         </CartProvider>
       </body>

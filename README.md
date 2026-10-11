@@ -3,7 +3,7 @@
 Loja virtual de acessórios, itens de casa e kits de presente, feita com
 Next.js (App Router) + Supabase + Resend, hospedada na Vercel.
 
-**Versão do aplicativo: 1.2.0 (fixa).** Ela aparece na janela "Sobre" do
+**Versão do aplicativo: 1.3.0 (fixa).** Ela aparece na janela "Sobre" do
 rodapé e **não muda a cada deploy** — ver [Versão fixa](#versão-fixa).
 Histórico de mudanças em [CHANGELOG.md](CHANGELOG.md); arquitetura e modelo de
 dados em [docs/arquitetura.md](docs/arquitetura.md); guia de operação no dia a
@@ -210,10 +210,10 @@ de duas formas combinadas:
 
 ## Versão fixa
 
-A versão do aplicativo é **1.2.0** e **não deve mudar** a cada deploy, correção ou
+A versão do aplicativo é **1.3.0** e **não deve mudar** a cada deploy, correção ou
 funcionalidade: é uma decisão do dono do projeto. Ela vive em `lib/app-version.ts` (exibida
 em "Sobre") e o `package.json` acompanha — um teste (`lib/app-version.test.ts`) falha se
-divergirem. Mudanças novas entram na seção "1.2.0 (versão atual)" do CHANGELOG. Só se cria
+divergirem. Mudanças novas entram na seção "1.3.0 (versão atual)" do CHANGELOG. Só se cria
 outra versão quando o dono pedir expressamente.
 
 ## Rodando e testando

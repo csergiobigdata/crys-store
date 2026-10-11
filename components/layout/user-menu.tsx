@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  CircleHelp,
   ContactRound,
   LayoutDashboard,
   LogOut,
@@ -93,6 +94,10 @@ export function UserMenu({ user }: { user: CurrentUser }) {
           >
             <PackageSearch className="h-4 w-4" aria-hidden="true" />
             Meus pedidos
+          </Link>
+          <Link href="/ajuda" role="menuitem" className={itemClass} onClick={() => setOpen(false)}>
+            <CircleHelp className="h-4 w-4" aria-hidden="true" />
+            Ajuda
           </Link>
           {user.role === "admin" && (
             <>

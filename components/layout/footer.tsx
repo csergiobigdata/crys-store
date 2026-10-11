@@ -69,6 +69,11 @@ export async function Footer() {
                 <li>[REVISAR] contato não configurado</li>
               )}
               <li>
+                <Link href="/ajuda" className="font-medium text-white hover:underline">
+                  Ajuda
+                </Link>
+              </li>
+              <li>
                 <Link href="/fale-conosco" className="font-medium text-white hover:underline">
                   Fale Conosco
                 </Link>

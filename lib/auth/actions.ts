@@ -155,6 +155,13 @@ export async function logout() {
   redirect("/");
 }
 
+/** Encerra a sessão por inatividade e volta para o login com um aviso. */
+export async function logoutIdle() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/entrar?expirou=1");
+}
+
 export type DeleteAccountState = { error: string } | undefined;
 
 /**

@@ -1,10 +1,22 @@
 # Changelog
 
-> **A versão do aplicativo é fixa em 1.2.0** (exibida em "Sobre"). Por decisão do
+> **A versão do aplicativo é fixa em 1.3.0** (exibida em "Sobre"). Por decisão do
 > dono do projeto, ela não muda a cada deploy: as mudanças novas entram na seção
 > abaixo, sem trocar o número. A constante está em `lib/app-version.ts`.
 
-## 1.2.0 (versão atual) — alterações mais recentes
+## 1.3.0 (versão atual) — alterações mais recentes
+
+- Painel administrativo: o card "Pedidos ativos" passa a contar só os pedidos que não foram
+  cancelados (antes contava todos).
+- Sessão por inatividade: depois de 15 minutos sem mouse, teclado, rolagem ou toque, o usuário
+  logado (cliente ou administrador) é desconectado e volta ao login, com aviso. A atividade vale
+  para todas as abas abertas (`components/site/idle-logout.tsx`, ação `logoutIdle`).
+- Nova página de **Ajuda** (`/ajuda`): perguntas e respostas sobre compra, pagamento, entrega e conta,
+  e uma seção extra "Para administradores" visível só a quem é admin. Links no cabeçalho, no rodapé (Atendimento)
+  e no menu do usuário.
+- Versão do aplicativo atualizada de 1.2.0 para 1.3.0 a pedido do dono (continua fixa).
+
+## 1.2.0 — versão anterior
 
 - Documentação revista: `README.md` reescrito, novo `docs/operacao.md` (guia de operação) e
   capítulo 7 em `docs/arquitetura.md` com tudo o que mudou desde a especificação.
@@ -14,7 +26,7 @@
 - "Esqueci minha senha": link no login, e-mail com link de uso único (1 hora) enviado pelo
   Resend e página para criar a nova senha.
 - Expiração automática de pedidos pelo Vercel Cron (`vercel.json`), uma vez por dia.
-- Versão fixa do aplicativo em 1.2.0.
+- Versão fixa do aplicativo em 1.2.0 (depois atualizada para 1.3.0).
 - Comprovante Pix: o e-mail ao administrador leva o arquivo anexado, reduzido ao menor tamanho
   (imagem até 1600 px em WebP/JPEG/PNG, o que ficar menor; PDF segue igual). O original fica
   guardado no painel.
