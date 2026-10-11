@@ -27,7 +27,7 @@ export const generalSettingsSchema = z.object({
     .string()
     .trim()
     .min(1, { error: "Informe o nome do recebedor do Pix." })
-    .max(25, { error: "O nome do recebedor do Pix pode ter no máximo 25 caracteres." }),
+    .max(100, { error: "O nome do recebedor do Pix pode ter no máximo 100 caracteres." }),
   pixMerchantCity: z
     .string()
     .trim()

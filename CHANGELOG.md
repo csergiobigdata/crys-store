@@ -11,6 +11,8 @@
 - Sessão por inatividade: depois de 15 minutos sem mouse, teclado, rolagem ou toque, o usuário
   logado (cliente ou administrador) é desconectado e volta ao login, com aviso. A atividade vale
   para todas as abas abertas (`components/site/idle-logout.tsx`, ação `logoutIdle`).
+- Configurações: o "Nome do recebedor" do Pix aceita até 100 caracteres (antes 25). O QR Code/copia e
+  cola continua limitado a 25 pelo padrão do Pix: o app corta o nome só dentro do código, sem acentos.
 - Nova página de **Ajuda** (`/ajuda`): perguntas e respostas sobre compra, pagamento, entrega e conta,
   e uma seção extra "Para administradores" visível só a quem é admin. Links no cabeçalho, no rodapé (Atendimento)
   e no menu do usuário.

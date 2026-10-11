@@ -77,12 +77,12 @@ export function GeneralSettingsForm({
           </div>
           <div>
             <label className="block text-xs text-plum-soft">
-              Nome do recebedor (até 25 caracteres)
+              Nome do recebedor (até 100 caracteres)
             </label>
             <input
               name="pixMerchantName"
               required
-              maxLength={25}
+              maxLength={100}
               defaultValue={pixConfig.merchantName}
               className="mt-1 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
             />

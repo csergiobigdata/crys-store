@@ -11,7 +11,7 @@ import { z } from "zod";
  */
 const pixEnvSchema = z.object({
   PIX_KEY: z.string().min(1),
-  PIX_MERCHANT_NAME: z.string().min(1).max(25),
+  PIX_MERCHANT_NAME: z.string().min(1).max(100),
   PIX_MERCHANT_CITY: z.string().min(1).max(15),
   PIX_EXPIRATION_HOURS: z.coerce.number().int().positive().default(24),
 });
