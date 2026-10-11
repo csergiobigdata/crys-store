@@ -11,10 +11,7 @@ import type { CurrentUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils/cn";
 
 // As categorias ficam na barra fixa abaixo do cabeçalho (CategoryBar).
-const navLinks = [
-  { href: "/catalogo", label: "Todos os produtos" },
-  { href: "/ajuda", label: "Ajuda" },
-];
+const navLinks = [{ href: "/catalogo", label: "Todos os produtos" }];
 
 export function HeaderNav({ user }: { user: CurrentUser | null }) {
   const [open, setOpen] = useState(false);

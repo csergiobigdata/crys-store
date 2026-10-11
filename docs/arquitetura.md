@@ -548,7 +548,7 @@ Hoje são **25**. As de `0016` em diante:
 
 ### 7.6.1 Ajuda
 `app/ajuda/page.tsx` (pública): FAQ em `<details>`, agrupada por assunto. A seção "Para administradores" só é
-renderizada quando `getCurrentUser().role === "admin"`. Linkada no rodapé e no menu do usuário. Ao mudar um
+renderizada quando `getCurrentUser().role === "admin"`. Linkada só no rodapé (Atendimento). Ao mudar um
 fluxo (pagamento, frete, painel), atualizar também os textos dessa página.
 
 ### 7.6.2 Apagar o log de auditoria

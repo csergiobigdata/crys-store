@@ -17,8 +17,7 @@
 - Configurações: o "Nome do recebedor" do Pix aceita até 100 caracteres (antes 25). O QR Code/copia e
   cola continua limitado a 25 pelo padrão do Pix: o app corta o nome só dentro do código, sem acentos.
 - Nova página de **Ajuda** (`/ajuda`): perguntas e respostas sobre compra, pagamento, entrega e conta,
-  e uma seção extra "Para administradores" visível só a quem é admin. Links no cabeçalho, no rodapé (Atendimento)
-  e no menu do usuário.
+  e uma seção extra "Para administradores" visível só a quem é admin. Link no rodapé, na seção Atendimento.
 - Versão do aplicativo atualizada de 1.2.0 para 1.3.0 a pedido do dono (continua fixa).
 
 ## 1.2.0 — versão anterior
