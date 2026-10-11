@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, ShoppingBag, User, X } from "lucide-react";
+import { LayoutGrid, Menu, ShoppingBag, User, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
@@ -24,8 +24,12 @@ export function HeaderNav({ user }: { user: CurrentUser | null }) {
           <Link
             key={link.href}
             href={link.href}
-            className="text-sm font-medium text-plum-soft transition-colors hover:text-rose-dark"
+            className="group inline-flex items-center gap-2 rounded-full border border-rose-light bg-white/60 px-4 py-1.5 text-sm font-medium tracking-wide text-plum-soft shadow-sm transition-all hover:border-rose/50 hover:bg-rose-light/40 hover:text-rose-dark hover:shadow"
           >
+            <LayoutGrid
+              className="h-4 w-4 text-rose/70 transition-colors group-hover:text-rose-dark"
+              aria-hidden="true"
+            />
             {link.label}
           </Link>
         ))}
