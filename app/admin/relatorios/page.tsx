@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import { PAID_STATUSES } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Relatórios — Admin" };
 
-const PAID_STATUSES = ["pago", "em_separacao", "enviado", "entregue"];
 
 function defaultDateRange() {
   const to = new Date();

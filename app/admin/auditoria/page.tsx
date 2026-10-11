@@ -23,6 +23,7 @@ const actionLabels: Record<string, string> = {
   mark_order_shipped: "Marcou pedido como enviado",
   update_general_settings: "Atualizou configurações gerais",
   update_local_delivery: "Atualizou a entrega local (frete)",
+  confirm_pix_payment_manual: "Confirmou o pagamento manualmente (com ou sem comprovante)",
   pause_sales: "Pausou as vendas",
   resume_sales: "Liberou as vendas",
   create_shipping_rule: "Criou regra de frete",

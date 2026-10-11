@@ -34,7 +34,7 @@ export default async function AdminSettingsPage() {
       </h1>
 
       <section className="mt-6 rounded-2xl border border-rose-light bg-surface p-6 shadow-card">
-        <h2 className="font-display text-lg text-plum">Vendas</h2>
+        <h2 className="font-display text-lg text-plum">Pausa de vendas</h2>
         <p className="mt-1 text-sm text-plum-soft">
           Ao pausar, os clientes continuam navegando pelos produtos e podem escrever pelo Fale
           Conosco, mas não conseguem comprar. Um aviso aparece em todo o site. Você pode liberar

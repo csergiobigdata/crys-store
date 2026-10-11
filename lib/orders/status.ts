@@ -25,3 +25,6 @@ export const orderStatusTone: Record<string, "neutral" | "success" | "error" | "
   pagamento_recusado: "error",
   estornado: "error",
 };
+
+/** Status de pedidos com pagamento confirmado (a venda foi concretizada). */
+export const PAID_STATUSES = ["pago", "em_separacao", "enviado", "entregue"];

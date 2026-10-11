@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ConfirmPaymentForm } from "@/components/admin/orders/confirm-payment-form";
 import { CancelOrderForm } from "@/components/admin/orders/cancel-order-form";
 import { markOrderShippedAction } from "@/lib/admin/order-actions";
 import { refundCardPaymentAction } from "@/lib/admin/mercadopago-actions";
-import { confirmPixPaymentAction, rejectPixPaymentAction } from "@/lib/admin/pix-actions";
+import { rejectPixPaymentAction } from "@/lib/admin/pix-actions";
 import { orderStatusLabels } from "@/lib/orders/status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -122,7 +123,7 @@ export default async function AdminOrderDetailPage({
       </section>
 
       {order.payment_method === "pix" && pixPayment && (
-        <section className="mt-6 rounded-2xl border border-rose/30 bg-rose-light/20 p-6">
+        <section id="pagamento" className="mt-6 scroll-mt-24 rounded-2xl border border-rose/30 bg-rose-light/20 p-6">
           <h2 className="font-display text-lg text-plum">Pagamento Pix</h2>
           <p className="mt-2 text-sm text-plum-soft">
             Status do comprovante:{" "}
@@ -145,20 +146,11 @@ export default async function AdminOrderDetailPage({
           )}
 
           {canReview && (
-            <div className="mt-6 flex flex-wrap gap-3">
-              <form
-                action={async () => {
-                  "use server";
-                  await confirmPixPaymentAction(order.id);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="rounded-full bg-success px-5 py-2.5 text-sm font-medium text-blush hover:opacity-90"
-                >
-                  Confirmar pagamento
-                </button>
-              </form>
+            <div className="mt-6 space-y-5">
+              <ConfirmPaymentForm
+                orderId={order.id}
+                hasCustomerProof={Boolean(pixPayment.proof_file_path)}
+              />
 
               <form
                 action={async (formData: FormData) => {

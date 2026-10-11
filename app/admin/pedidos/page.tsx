@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { orderStatusLabels } from "@/lib/orders/status";
+import { orderStatusLabels, PAID_STATUSES } from "@/lib/orders/status";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDateTime } from "@/lib/utils/format";
 
 export const metadata: Metadata = { title: "Pedidos — Admin" };
 
 const statusOptions = Object.entries(orderStatusLabels);
+
+// Filtro especial: todos os pedidos com pagamento confirmado.
+const CONFIRMED_FILTER = "confirmados";
+
+// Pix ainda sem confirmação do administrador.
+const awaitingConfirmationStatuses = ["aguardando_pagamento", "em_analise"];
 
 // Mesmos status em que o pedido ainda pode ser cancelado (ver admin_cancel_order).
 const cancellableStatuses = [
@@ -32,7 +38,8 @@ export default async function AdminOrdersPage({
     .order("created_at", { ascending: false })
     .limit(100);
 
-  if (status) query = query.eq("status", status);
+  if (status === CONFIRMED_FILTER) query = query.in("status", PAID_STATUSES);
+  else if (status) query = query.eq("status", status);
   if (metodo) query = query.eq("payment_method", metodo);
 
   const { data: orders } = await query;
@@ -50,6 +57,7 @@ export default async function AdminOrdersPage({
           className="rounded-lg border border-rose/30 px-3 py-2 text-sm"
         >
           <option value="">Todos os status</option>
+          <option value={CONFIRMED_FILTER}>Pagamento confirmado</option>
           {statusOptions.map(([value, label]) => (
             <option key={value} value={value}>
               {label}
@@ -109,6 +117,11 @@ export default async function AdminOrdersPage({
                 </td>
                 <td className="p-4 text-plum-soft">
                   {orderStatusLabels[order.status] ?? order.status}
+                  {PAID_STATUSES.includes(order.status) && (
+                    <span className="ml-2 rounded-full bg-success-light px-2 py-0.5 text-xs font-medium text-success">
+                      Pagamento confirmado
+                    </span>
+                  )}
                 </td>
                 <td className="p-4 font-medium text-plum">
                   {formatCurrency(Number(order.total))}
@@ -120,6 +133,18 @@ export default async function AdminOrdersPage({
                   >
                     Detalhes
                   </Link>
+                  {order.payment_method === "pix" &&
+                    awaitingConfirmationStatuses.includes(order.status) && (
+                      <>
+                        {" · "}
+                        <Link
+                          href={`/admin/pedidos/${order.order_number}#pagamento`}
+                          className="font-medium text-success hover:underline"
+                        >
+                          Confirmar pagamento
+                        </Link>
+                      </>
+                    )}
                   {cancellableStatuses.includes(order.status) && (
                     <>
                       {" · "}

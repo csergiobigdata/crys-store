@@ -6,6 +6,13 @@
 
 ## 1.3.0 (versão atual) — alterações mais recentes
 
+- Nova seção **Vendas** no painel (`/admin/vendas`): lista só os pedidos com pagamento confirmado (pago, em separação, enviado, entregue), com filtro por período e forma de pagamento, total vendido e quem/quando confirmou. Em **Pedidos**, os confirmados ganham a etiqueta "Pagamento confirmado" (e filtro próprio), e os Pix pendentes têm o botão "Confirmar pagamento". A antiga seção "Vendas" das Configurações passou a se chamar "Pausa de vendas".
+- E-mail ao administrador a cada compra (Pix ou cartão): dados do cliente (nome, e-mail, telefone,
+  CPF), produtos com quantidade e valores, frete, desconto, total, forma de pagamento e endereço de
+  entrega, com link para o pedido no painel (`notifyAdminNewOrder`). Vai para `ADMIN_NOTIFICATION_EMAIL`.
+- Pedidos (admin): "Marcar como pagamento confirmado" agora aceita comprovante anexado pelo
+  administrador e observação, ambos opcionais (`confirmPixPaymentManuallyAction`). Vale para Pix em
+  "aguardando pagamento" ou "em análise"; avisa o cliente por e-mail e registra na auditoria.
 - Login: botão de olho para mostrar/ocultar a senha digitada (`components/ui/password-input.tsx`).
 - Meus pedidos: agora lista os produtos de cada pedido, separados em "Pedidos em andamento" e
   "Compras anteriores" (entregue, cancelado, expirado, recusado, estornado).

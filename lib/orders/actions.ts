@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/session";
-import { notifyAdminNewPixOrder } from "@/lib/email/notify-admin";
+import { notifyAdminNewOrder } from "@/lib/email/notify-admin";
 import { sendOrderCreatedEmail } from "@/lib/email/notify-customer";
 import { isCardPaymentEnabled } from "@/lib/mercadopago/card-enabled";
 import { type CepAddress, lookupCepAddress } from "@/lib/orders/cep-lookup";
@@ -228,12 +228,9 @@ export async function createOrder(
       payerCpf: data.cpf,
       expiresAt: new Date(Date.now() + pixExpirationHours * 36e5),
     });
-    await notifyAdminNewPixOrder({
-      orderNumber: order.order_number,
-      total,
-      customerName: data.fullName,
-    });
   }
+
+  await notifyAdminNewOrder(order.order_id);
 
   await sendOrderCreatedEmail({
     to: data.email,
