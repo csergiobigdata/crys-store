@@ -54,24 +54,28 @@ de Uso avisam que o cartão em até 6x "ainda não está liberado" e "em breve".
   tamanho possível** (imagem até 1600 px em WebP/JPEG/PNG, o menor; PDF igual).
 - **Conta**: cadastro/login, "Esqueci minha senha", dados de entrega, apelido,
   telefone, histórico de pedidos e exclusão de conta (LGPD). Depois do login abre a
-  página inicial.
+  página inicial. A sessão expira após **15 minutos sem atividade** (volta ao login, com aviso).
+- **Ajuda** (`/ajuda`, link no rodapé em Atendimento): perguntas e respostas para clientes e,
+  só para administradores, o passo a passo do painel.
 - **Sobre** (rodapé): logomarca, versão e contato do administrador principal.
 - **Fale Conosco**: mensagem com filtro de palavrões; vai por e-mail a **todos os
   administradores** e fica guardada no painel.
 - Páginas legais (Termos, Privacidade, Trocas, Entrega) e aviso de cookies.
 
 ### Painel administrativo (`/admin`)
-- **Visão geral** com contadores e o card **"Online agora"** (abas abertas e em qual
+- **Visão geral** com contadores (produtos ativos, comprovantes Pix em análise e pedidos
+  ativos, sem os cancelados) e o card **"Online agora"** (abas abertas e em qual
   área do site; anônimo, via Supabase Realtime).
 - **Produtos** (status A/I, fotos, variações e estoque, marca "Produto de teste"),
   **Categorias** (máx. 10), **Cupons** (nome de até 10 caracteres, código, teto 30%).
 - **Pedidos**: confirmar/recusar Pix, marcar como enviado, estornar cartão e
   **cancelar** com justificativa (guarda quem cancelou, data/hora/segundo em
   horário de Brasília e o motivo).
-- **Mensagens** (Fale Conosco), **Relatórios**, **Auditoria**.
+- **Mensagens** (Fale Conosco), **Relatórios**, **Auditoria** (o administrador principal pode
+  apagar todo o log, digitando APAGAR para confirmar).
 - **Administradores**: de 1 a **3**; só o **principal** gerencia a lista, e o e-mail e o
   telefone dele são o contato público da loja.
-- **Configurações**: prazo do Pix, chave Pix, dados da empresa e **entrega local**
+- **Configurações**: prazo do Pix, chave Pix, nome do recebedor (até 100 caracteres; no QR Code vai cortado em 25), dados da empresa e **entrega local**
   (CEP/coordenadas da loja, faixas de distância e valor do motoboy).
 - "Esvaziar carrinho" só para administradores, sempre sobre o próprio carrinho.
 

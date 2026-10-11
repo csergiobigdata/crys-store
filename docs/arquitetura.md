@@ -576,6 +576,10 @@ dados pessoais. A CSP libera `wss://*.supabase.co`.
 ### 7.10 Outros ajustes
 - Datas/horas sempre em **horário de Brasília** (`formatDateTime`, `formatDateTimeSeconds`), pois o servidor roda em UTC.
 - Tema claro único (`color-scheme: only light`).
+- Cabeçalho: "Todos os produtos" é um botão discreto (pílula com borda rosa clara e ícone `LayoutGrid`) em
+  `components/layout/header-nav.tsx`; no celular segue como item de lista do menu.
+- Nome do recebedor do Pix: até 100 caracteres em Configurações (`admin-settings.ts`, `pix/env.ts`); o BR Code
+  (`payload.ts`) corta em 25, sem acentos, como exige o padrão.
 - Telas: carrinho com lixeira por produto e "Esvaziar carrinho" (admin); avisos "(em breve)" do cartão.
 
 ### 7.11 Pontos em aberto

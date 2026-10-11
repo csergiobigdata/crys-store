@@ -18,6 +18,7 @@
   cola continua limitado a 25 pelo padrão do Pix: o app corta o nome só dentro do código, sem acentos.
 - Nova página de **Ajuda** (`/ajuda`): perguntas e respostas sobre compra, pagamento, entrega e conta,
   e uma seção extra "Para administradores" visível só a quem é admin. Link no rodapé, na seção Atendimento.
+- Cabeçalho: "Todos os produtos" ganhou visual de botão discreto, com ícone (só desktop).
 - Versão do aplicativo atualizada de 1.2.0 para 1.3.0 a pedido do dono (continua fixa).
 
 ## 1.2.0 — versão anterior
