@@ -183,8 +183,6 @@ export async function createProductWithDetailsAction(
   }
 
   const file = formData.get("productImage");
-  const altText = String(formData.get("altText") ?? "").trim();
-  if (!altText) return { error: "Informe a descrição da foto do produto." };
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Adicione a foto principal do produto." };
   }
@@ -242,7 +240,7 @@ export async function createProductWithDetailsAction(
   const { error: imageError } = await supabase.from("product_images").insert({
     product_id: product.id,
     url: publicUrlData.publicUrl,
-    alt_text: altText,
+    alt_text: parsedProduct.data.name,
     position: 0,
   });
   if (imageError) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { productSchema, variantSchema } from "./admin-product";
+import { newProductVariantSchema, productSchema, variantSchema } from "./admin-product";
 
 describe("variantSchema", () => {
   it("aceita campos ausentes (FormData.get devolve null)", () => {
@@ -38,6 +38,37 @@ describe("variantSchema", () => {
     });
     expect(result.success && result.data.priceOverride).toBe(1000);
     expect(result.success && result.data.active).toBe(false);
+  });
+});
+
+describe("newProductVariantSchema", () => {
+  const validVariant = {
+    sku: "PANO-01",
+    attributeKey1: "nenhum",
+    attributeValue1: "",
+    priceOverride: "",
+    stockQuantity: "1",
+    active: "on",
+  };
+
+  it("permite salvar sem especificação quando o atributo é nenhum", () => {
+    expect(newProductVariantSchema.safeParse(validVariant).success).toBe(true);
+  });
+
+  it("exige especificação quando um atributo foi selecionado", () => {
+    expect(
+      newProductVariantSchema.safeParse({
+        ...validVariant,
+        attributeKey1: "cor",
+      }).success,
+    ).toBe(false);
+    expect(
+      newProductVariantSchema.safeParse({
+        ...validVariant,
+        attributeKey1: "cor",
+        attributeValue1: "Azul",
+      }).success,
+    ).toBe(true);
   });
 });
 

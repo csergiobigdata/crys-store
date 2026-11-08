@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const attributes = [
   { value: "cor", label: "Cor" },
@@ -28,9 +28,19 @@ const colors = [
   "Cinza claro",
   "Cinza escuro",
   "Vermelho",
+  "Laranja",
   "Marrom",
+  "Bege",
+  "Creme",
+  "Off-white",
+  "Rosa claro",
+  "Pink",
+  "Lilás",
+  "Turquesa",
+  "Vinho",
   "Prata",
   "Dourado",
+  "Cobre",
 ];
 
 const customColor = "__outra_cor__";
@@ -44,6 +54,7 @@ export function VariantAttributeFields({
   defaultValue = "",
   required = false,
   className,
+  onValidityChange,
 }: {
   index: 1 | 2;
   idPrefix: string;
@@ -51,6 +62,7 @@ export function VariantAttributeFields({
   defaultValue?: string;
   required?: boolean;
   className?: string;
+  onValidityChange?: () => void;
 }) {
   const isKnownColor = colors.includes(defaultValue);
   const [attribute, setAttribute] = useState(defaultKey);
@@ -63,6 +75,10 @@ export function VariantAttributeFields({
   const keyId = `${idPrefix}-${keyName}`;
   const valueId = `${idPrefix}-${valueName}`;
   const needsSpecification = attribute !== "" && attribute !== "nenhum";
+
+  useEffect(() => {
+    onValidityChange?.();
+  }, [attribute, specification, isCustomColorSelected, onValidityChange]);
 
   return (
     <>
@@ -133,14 +149,14 @@ export function VariantAttributeFields({
               />
             )}
           </>
-        ) : needsSpecification ? (
+        ) : needsSpecification || attribute === "nenhum" ? (
           <input
             id={valueId}
             name={valueName}
             value={specification}
             onChange={(event) => setSpecification(event.target.value)}
-            required={required}
-            placeholder="Ex.: Algodão"
+            required={required && needsSpecification}
+            placeholder={needsSpecification ? "Ex.: Algodão" : "Opcional"}
             className={fieldClass}
           />
         ) : (

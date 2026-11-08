@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { VariantAttributeFields } from "@/components/admin/products/variant-attribute-fields";
 import {
   createProductWithDetailsAction,
@@ -22,8 +23,15 @@ export function ProductCreationForm({ categories }: { categories: Category[] }) 
   const [duplicateName, setDuplicateName] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [slugSuggestion, setSlugSuggestion] = useState<string | null>(null);
-  const [altText, setAltText] = useState("");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const imagePreviewRef = useRef<string | null>(null);
   const [formValid, setFormValid] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreviewRef.current) URL.revokeObjectURL(imagePreviewRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (name.trim().length < 2) return;
@@ -59,7 +67,9 @@ export function ProductCreationForm({ categories }: { categories: Category[] }) 
   }, [name, slugTouched, skuTouched]);
 
   function updateFormValidity() {
-    setFormValid(formRef.current?.checkValidity() ?? false);
+    window.requestAnimationFrame(() =>
+      setFormValid(formRef.current?.checkValidity() ?? false),
+    );
   }
 
   return (
@@ -86,7 +96,6 @@ export function ProductCreationForm({ categories }: { categories: Category[] }) 
               value={name}
               onChange={(event) => {
                 setName(event.target.value);
-                setAltText(event.target.value);
                 setDuplicateName(false);
                 setSuggestionError(null);
                 setSlugSuggestion(null);
@@ -252,23 +261,28 @@ export function ProductCreationForm({ categories }: { categories: Category[] }) 
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
             required
-            onChange={updateFormValidity}
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              if (imagePreviewRef.current) {
+                URL.revokeObjectURL(imagePreviewRef.current);
+              }
+              imagePreviewRef.current = file ? URL.createObjectURL(file) : null;
+              setImagePreviewUrl(imagePreviewRef.current);
+              updateFormValidity();
+            }}
             className="mt-1.5 block w-full text-sm text-plum-soft file:mr-3 file:rounded-full file:border file:border-rose/40 file:bg-white file:px-4 file:py-2 file:text-sm file:text-rose-dark"
           />
           <p className="mt-1 text-xs text-plum-soft">JPEG, PNG, WebP ou GIF; até 5 MB.</p>
-        </div>
-        <div>
-          <label htmlFor="product-alt-text" className="block text-sm font-medium text-plum">
-            Descrição da foto (acessibilidade)
-          </label>
-          <input
-            id="product-alt-text"
-            name="altText"
-            required
-            value={altText}
-            onChange={(event) => setAltText(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
-          />
+          {imagePreviewUrl && (
+            <Image
+              src={imagePreviewUrl}
+              alt={`Prévia da foto de ${name || "produto"}`}
+              width={160}
+              height={160}
+              unoptimized
+              className="mt-3 h-40 w-40 rounded-xl border border-rose/20 object-cover"
+            />
+          )}
         </div>
       </section>
 
@@ -326,7 +340,12 @@ export function ProductCreationForm({ categories }: { categories: Category[] }) 
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <VariantAttributeFields index={1} idPrefix="new-product" required />
+            <VariantAttributeFields
+              index={1}
+              idPrefix="new-product"
+              required
+              onValidityChange={updateFormValidity}
+            />
           </div>
         </div>
         <input type="hidden" name="active" value="on" />
