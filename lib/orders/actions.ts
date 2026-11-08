@@ -56,9 +56,16 @@ export async function getCepQuote(
 
   const city = lookup.status === "ok" ? lookup.address.city : undefined;
   const hasTestProduct = await cartHasTestProduct(variantIds);
+  if (hasTestProduct) {
+    return {
+      address: null,
+      addressError: "Produtos de teste não estão disponíveis para compra.",
+      options: [],
+    };
+  }
   const localDelivery = await resolveLocalDeliveryInputs(
     digits,
-    hasTestProduct || resolveZone(digits, city)?.zone === "same_city",
+    resolveZone(digits, city)?.zone === "same_city",
     lookup.status === "ok"
       ? {
           street: lookup.address.street,
@@ -71,7 +78,6 @@ export async function getCepQuote(
     cep: digits,
     city,
     totalUnits,
-    hasTestProduct,
     local: localDelivery,
   });
   if (!quote) {
@@ -141,6 +147,13 @@ export async function createOrder(
   }
 
   const data = parsed.data;
+  const hasTestProduct = await cartHasTestProduct(data.items.map((item) => item.variantId));
+  if (hasTestProduct) {
+    return {
+      error: "Produtos de teste não podem ser comprados. Remova-os do carrinho e escolha outro produto.",
+    };
+  }
+
   if (data.paymentMethod === "cartao" && !isCardPaymentEnabled()) {
     return { error: "Pagamento por cartão indisponível no momento. Escolha Pix." };
   }
@@ -154,17 +167,15 @@ export async function createOrder(
   // envia o valor. A cidade vem da consulta do CEP (com a digitada como reserva).
   const totalUnits = data.items.reduce((sum, item) => sum + item.quantity, 0);
   const shippingCity = cityLookup.status === "ok" ? cityLookup.address.city : data.city;
-  const hasTestProduct = await cartHasTestProduct(data.items.map((item) => item.variantId));
   const localDelivery = await resolveLocalDeliveryInputs(
     data.cep,
-    hasTestProduct || resolveZone(data.cep, shippingCity)?.zone === "same_city",
+    resolveZone(data.cep, shippingCity)?.zone === "same_city",
     { street: data.street, city: shippingCity, state: data.state },
   );
   const quote = getShippingOptions({
     cep: data.cep,
     city: shippingCity,
     totalUnits,
-    hasTestProduct,
     local: localDelivery,
   });
   const shippingOption = quote?.options.find((option) => option.id === data.shippingMethod);

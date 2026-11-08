@@ -41,6 +41,7 @@ export default async function ProductPage({
 
           <ProductPurchasePanel
             basePrice={Number(product.base_price)}
+            isCustomized={product.is_customized}
             variants={product.variants.map((v) => ({
               id: v.id,
               attributes: (v.attributes as Record<string, string>) ?? {},

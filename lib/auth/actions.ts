@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { forgetLastLoginEmail, rememberLastLoginEmail } from "@/lib/auth/last-login";
 import { getCurrentUser } from "@/lib/auth/session";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -67,6 +68,8 @@ export async function login(
     return { error: "E-mail ou senha incorretos." };
   }
 
+  await rememberLastLoginEmail(parsed.data.email);
+
   // Depois de entrar, vai para a página inicial — ou para onde a pessoa estava indo
   // (ex.: /checkout). Só aceita caminhos do próprio site: "//" e "/\\" abririam
   // outro endereço (redirecionamento aberto).
@@ -80,6 +83,11 @@ export async function login(
       : "/";
 
   redirect(redirectTo);
+}
+
+/** "Usar outro e-mail": apaga o e-mail lembrado neste navegador. */
+export async function forgetLoginEmail() {
+  await forgetLastLoginEmail();
 }
 
 export async function signup(

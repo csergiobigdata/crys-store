@@ -237,15 +237,11 @@ export type ShippingQuote = {
  * Opções de envio disponíveis para o destino. `city` só importa para
  * reconhecer Atibaia e as cidades da região; o estado vem sempre do CEP.
  *
- * `hasTestProduct` (algum item do carrinho é produto de teste) libera a
- * "Entrega local, a combinar com a loja" para qualquer destino — a loja
- * combina diretamente com quem está testando o aplicativo.
  */
 export function getShippingOptions(params: {
   cep: string;
   city?: string;
   totalUnits: number;
-  hasTestProduct?: boolean;
   /** Taxas e distância da entrega local (padrão: taxas iniciais, distância desconhecida). */
   local?: LocalDeliveryInputs;
   now?: Date;
@@ -304,9 +300,7 @@ export function getShippingOptions(params: {
   }
 
   // Entrega local, combinada com a loja. Na cidade da loja (Atibaia) a taxa
-  // depende do raio de distância configurado pelo administrador (de R$ 0,00 até
-  // R$ 50,00). Com produto de teste no carrinho a opção vale para qualquer
-  // destino, sem taxa (R$ 0,00) fora da cidade da loja.
+  // depende do raio de distância configurado pelo administrador.
   const local = params.local ?? DEFAULT_LOCAL_INPUTS;
   const tierFee = localFeeForDistance(local.tiers, local.distanceKm);
 
@@ -320,14 +314,6 @@ export function getShippingOptions(params: {
           ? "A loja entra em contato para combinar a entrega. Taxa conforme a distância."
           : `Distância aproximada de ${km.toLocaleString("pt-BR")} km da loja. A loja entra em contato para combinar a entrega.`,
       price: tierFee,
-      deadline: "a combinar",
-    });
-  } else if (params.hasTestProduct) {
-    options.push({
-      id: "local_arranged",
-      label: "Entrega local - A combinar com a loja (mesmo dia / dia seguinte)",
-      description: "A loja entra em contato para combinar a entrega e o valor.",
-      price: 0,
       deadline: "a combinar",
     });
   }

@@ -16,9 +16,11 @@ type Variant = {
 export function ProductPurchasePanel({
   basePrice,
   variants,
+  isCustomized,
 }: {
   basePrice: number;
   variants: Variant[];
+  isCustomized: boolean;
 }) {
   const { addItem, salesPaused } = useCart();
 
@@ -118,6 +120,17 @@ export function ProductPurchasePanel({
           </span>
         )}
       </div>
+
+      {isCustomized && (
+        <p
+          className="mt-4 rounded-lg bg-sky-light/70 px-3 py-2 text-sm text-sky-dark"
+          aria-live="polite"
+        >
+          {quantity >= 2
+            ? "Para 2 ou mais unidades deste produto customizado, combine a data de preparação e entrega com a loja."
+            : "Produto customizado: a preparação pode levar até 5 dias."}
+        </p>
+      )}
 
       <Button
         type="button"

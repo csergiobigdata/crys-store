@@ -14,7 +14,7 @@ modelo de dados, [arquitetura.md](arquitetura.md).
 |---|---|---|
 | Código | GitHub `csergiobigdata/crys-store` (privado), branch `main` | Cada push na `main` gera um deploy |
 | Site | `https://crys-store.vercel.app` (Vercel, time `cs-ai-team`, plano Hobby) | Domínio próprio ainda não registrado |
-| Banco / login / arquivos | Supabase, projeto **Chrys Store** (região us-east-2) | Migrações `0001` a `0025` |
+| Banco / login / arquivos | Supabase, projeto **Chrys Store** (região us-east-2) | Migrações `0001` a `0026` |
 | E-mails | Resend, **conta criada com `chrysstoreapp@gmail.com`** | Modo de teste (ver [§5](#5-e-mails)) |
 | Administradora (dona) | `chrysstoreapp@gmail.com` | Administrador **principal** |
 | Telefone público | **19 97423-0904** | Em `profiles.phone` do principal |
@@ -100,7 +100,10 @@ commit;
 
 ## 4. Painel: o que cada tela faz
 
-- **Pedidos** → abrir o pedido: confirmar/recusar Pix, marcar como enviado, **cancelar** (justificativa
+- **Vendas** → só pedidos com pagamento confirmado; filtre por período e forma de pagamento para ver o total.
+- **Produtos** → para criar, informe nome, slug, descrição, preço, categoria, foto e ao menos um SKU. O slug e o SKU são sugeridos; nomes, slugs e SKUs não podem se repetir. Produtos de teste ficam ocultos para clientes. Em produto customizado, uma unidade tem prazo de até 5 dias e, para 2 ou mais, a data deve ser combinada com a loja.
+- **Configurações → Pausa de vendas** → pausa/libera as vendas a qualquer momento (o site avisa o cliente).
+- **Pedidos** → abrir o pedido: confirmar (comprovante e observação opcionais)/recusar Pix, marcar como enviado, **cancelar** (justificativa
   obrigatória; registra nome, data/hora e motivo). Cancelar **não devolve o dinheiro** de pedido pago:
   o reembolso é manual.
 - **Mensagens** → mensagens do Fale Conosco, com o resultado do envio por e-mail.
@@ -108,11 +111,15 @@ commit;
 - **Configurações → Frete** → CEP/coordenadas da loja, faixas de distância (R$ 0,00 a R$ 50,00) e valor do
   motoboy. A distância é em **linha reta**, por CEP (AwesomeAPI) ou pela rua (OpenStreetMap); se não for
   possível calcular, vale a taxa da faixa mais distante (nunca "grátis" por engano).
+- **Categorias** → cria, renomeia, ativa/desativa e exclui categorias; o limite é de **10** e a remoção
+  é bloqueada quando a categoria ainda está ligada a produtos.
 - **Cupons** → nome (≤ 10), código (≤ 15), teto de 30% do valor dos produtos, uso único por cliente.
 - **Configurações → Pix** → o nome do recebedor aceita até 100 caracteres; no QR Code/copia e cola vai
   cortado em 25 (limite do padrão Pix).
 - **Auditoria** → lista quem alterou o quê. O administrador **principal** pode apagar todo o log (digitando
   APAGAR); sobra apenas um registro informando quem apagou e quantos registros existiam.
+- **Login** → o e-mail do último acesso fica lembrado no navegador (a senha nunca); "Usar outro e-mail" apaga.
+- **E-mail de cada compra** → chega em `ADMIN_NOTIFICATION_EMAIL` com todos os dados do pedido.
 - **Visão geral** → cards "Produtos ativos", "Comprovantes Pix em análise" e "Pedidos ativos" (não conta os
   cancelados).
 - **Sessão** → quem está logado (cliente ou administrador) é desconectado após 15 minutos sem usar o site e

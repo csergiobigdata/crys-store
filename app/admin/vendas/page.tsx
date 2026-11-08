@@ -28,6 +28,7 @@ export default async function AdminSalesPage({
   if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
   if (metodo) query = query.eq("payment_method", metodo);
 
+  const hasFilter = Boolean(from || to || metodo);
   const { data } = await query;
   const orders = data ?? [];
 
@@ -187,9 +188,18 @@ export default async function AdminSalesPage({
         </table>
 
         {orders.length === 0 && (
-          <p className="p-6 text-center text-plum-soft">
-            Nenhuma venda com pagamento confirmado para esse filtro.
-          </p>
+          <div className="p-8 text-center" role="status">
+            <p className="font-medium text-plum">
+              {hasFilter
+                ? "Nenhuma venda confirmada encontrada para esse filtro."
+                : "Ainda não existem pedidos com vendas confirmadas."}
+            </p>
+            {!hasFilter && (
+              <p className="mt-1 text-sm text-plum-soft">
+                Quando você confirmar o pagamento de um pedido em Pedidos, ele aparecerá aqui.
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>

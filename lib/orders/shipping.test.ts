@@ -142,22 +142,6 @@ describe("entrega local a combinar", () => {
     }
   });
 
-  it("com produto de teste aparece para qualquer destino", () => {
-    for (const [cep, city] of [
-      ["06010-170", "Osasco"],
-      ["20040-020", "Rio de Janeiro"],
-      ["69010-000", "Manaus"],
-    ]) {
-      const ids = getShippingOptions({
-        cep,
-        city,
-        totalUnits: 1,
-        hasTestProduct: true,
-        now: tuesdayMorning,
-      })?.options.map((o) => o.id);
-      expect(ids).toContain("local_arranged");
-    }
-  });
 });
 
 describe("entrega local por raio de distância (Atibaia)", () => {
@@ -202,15 +186,4 @@ describe("entrega local por raio de distância (Atibaia)", () => {
     expect(motoboy?.price).toBe(22);
   });
 
-  it("com produto de teste fora de Atibaia a entrega a combinar é R$ 0,00", () => {
-    const option = getShippingOptions({
-      cep: "20040-020",
-      city: "Rio de Janeiro",
-      totalUnits: 1,
-      hasTestProduct: true,
-      local: { tiers, motoboyFee: 22, distanceKm: 430 },
-      now: tuesdayMorning,
-    })?.options.find((o) => o.id === "local_arranged");
-    expect(option?.price).toBe(0);
-  });
 });

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { CatalogFilters } from "@/components/catalog/catalog-filters";
 import { ProductCard } from "@/components/catalog/product-card";
 import { AnimatedSection } from "@/components/ui/animated-section";
+import { ButtonLink } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/auth/session";
 import {
   type CatalogSort,
   listActiveCategories,
@@ -33,7 +35,7 @@ export default async function CatalogPage({
     ? (params.ordenar as CatalogSort)
     : "relevancia";
 
-  const [categories, products] = await Promise.all([
+  const [categories, products, user] = await Promise.all([
     listActiveCategories(),
     listCatalogProducts({
       categorySlug: params.categoria,
@@ -42,13 +44,17 @@ export default async function CatalogPage({
       maxPrice: params.preco_max ? Number(params.preco_max) : undefined,
       sort,
     }),
+    getCurrentUser(),
   ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <h1 className="font-display text-3xl font-semibold text-plum">
-        Catálogo
-      </h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <h1 className="font-display text-3xl font-semibold text-plum">Catálogo</h1>
+        {user?.role === "admin" && (
+          <ButtonLink href="/admin/produtos/novo">Novo produto</ButtonLink>
+        )}
+      </div>
       <p className="mt-2 text-plum-soft">
         {products.length} produto{products.length === 1 ? "" : "s"}{" "}
         encontrado{products.length === 1 ? "" : "s"}.

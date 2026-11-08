@@ -24,34 +24,52 @@ describe("variantSchema", () => {
     }
   });
 
-  it("mantém o preço especial quando informado", () => {
+  it("mantém o preço específico quando informado em formato brasileiro", () => {
     const result = variantSchema.safeParse({
       sku: "X",
       attributeKey1: "",
       attributeValue1: "",
       attributeKey2: "",
       attributeValue2: "",
-      priceOverride: " 29.90 ",
+      priceOverride: " 1.000,00 ",
       stockQuantity: 1,
       active: null,
       imageId: "abc",
     });
-    expect(result.success && result.data.priceOverride).toBe("29.90");
+    expect(result.success && result.data.priceOverride).toBe(1000);
     expect(result.success && result.data.active).toBe(false);
   });
 });
 
 describe("productSchema", () => {
-  it("aceita descrição e categoria nulas", () => {
+  const validProduct = {
+    name: "Anel",
+    slug: "anel",
+    description: "Anel artesanal.",
+    basePrice: "10,00",
+    categoryId: "f635b50e-4dfd-5de5-af86-a37dc8a57f69",
+    status: "A",
+  };
+
+  it("exige descrição, preço e categoria", () => {
     const result = productSchema.safeParse({
-      name: "Anel",
-      slug: "anel",
-      description: null,
-      basePrice: "10",
-      categoryId: null,
-      status: "A",
+      ...validProduct,
     });
     expect(result.success).toBe(true);
+    expect(productSchema.safeParse({ ...validProduct, description: " " }).success).toBe(false);
+    expect(productSchema.safeParse({ ...validProduct, categoryId: "" }).success).toBe(false);
+    expect(productSchema.safeParse({ ...validProduct, basePrice: "" }).success).toBe(false);
+  });
+
+  it("interpreta valores monetários no formato brasileiro", () => {
+    for (const [input, expected] of [
+      ["1.000,00", 1000],
+      ["23.000,00", 23000],
+      ["1,00", 1],
+    ] as const) {
+      const result = productSchema.safeParse({ ...validProduct, basePrice: input });
+      expect(result.success && result.data.basePrice).toBe(expected);
+    }
   });
 });
 

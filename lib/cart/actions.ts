@@ -11,10 +11,13 @@ type VariantWithProductRow = {
   stock_quantity: number;
   active: boolean;
   product: {
+    id: string;
     name: string;
     slug: string;
     base_price: number;
     active: boolean;
+    is_test: boolean;
+    is_customized: boolean;
     images: { url: string; alt_text: string; position: number }[];
   } | null;
   image: { url: string; alt_text: string } | null;
@@ -93,7 +96,7 @@ export async function getCartDetails(lines: CartLine[]): Promise<CartLineDetails
   const { data } = await supabase
     .from("product_variants")
     .select(
-      "id, attributes, price_override, stock_quantity, active, product:products(name, slug, base_price, active, images:product_images(url, alt_text, position)), image:product_images(url, alt_text)",
+      "id, attributes, price_override, stock_quantity, active, product:products(id, name, slug, base_price, active, is_test, is_customized, images:product_images(url, alt_text, position)), image:product_images(url, alt_text)",
     )
     .in("id", ids);
 
@@ -114,14 +117,16 @@ export async function getCartDetails(lines: CartLine[]): Promise<CartLineDetails
       const details: CartLineDetails = {
         variantId: line.variantId,
         quantity: line.quantity,
+        productId: row.product.id,
         productName: row.product.name,
         productSlug: row.product.slug,
+        isCustomized: row.product.is_customized,
         variantAttributes: (row.attributes as Record<string, string>) ?? {},
         unitPrice: Number(row.price_override ?? row.product.base_price),
         imageUrl: image?.url ?? null,
         imageAlt: image?.alt_text || row.product.name,
         stockQuantity: row.stock_quantity,
-        active: row.active && row.product.active,
+        active: row.active && row.product.active && !row.product.is_test,
       };
       return details;
     })

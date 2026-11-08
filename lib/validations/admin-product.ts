@@ -15,9 +15,39 @@ const optionalId = z
   .string()
   .nullish()
   .transform((value) => (value ? value : undefined));
+const currencyValue = (value: unknown) => {
+  if (typeof value !== "string" && typeof value !== "number") return undefined;
+  const text = String(value).trim().replace(/[R$\s]/g, "");
+  if (!text) return undefined;
+
+  const normalized = text.includes(",")
+    ? text.replace(/\./g, "").replace(",", ".")
+    : text;
+  return Number(normalized);
+};
+const requiredMoney = z.preprocess(
+  currencyValue,
+  z.number({ error: "Informe um preço válido." }).positive({
+    error: "Informe um preço válido.",
+  }),
+);
+const optionalMoney = z.preprocess(
+  currencyValue,
+  z.number({ error: "Informe um preço válido." }).nonnegative().optional(),
+);
+const requiredStock = z.preprocess(
+  (value) => (value === null || value === "" ? undefined : Number(value)),
+  z.number({ error: "Informe o estoque." }).int().min(0, {
+    error: "O estoque deve ser um número inteiro maior ou igual a zero.",
+  }),
+);
 
 export const productSchema = z.object({
-  name: z.string().trim().min(2, { error: "Informe o nome do produto." }),
+  name: z
+    .string()
+    .trim()
+    .min(2, { error: "Informe o nome do produto." })
+    .transform((value) => value.replace(/\s+/g, " ")),
   slug: z
     .string()
     .trim()
@@ -26,14 +56,15 @@ export const productSchema = z.object({
     .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, {
       error: "Use apenas letras minúsculas, números e hífens.",
     }),
-  description: optionalText,
-  basePrice: z.coerce.number().positive({ error: "Informe um preço válido." }),
-  categoryId: optionalId,
+  description: z.string().trim().min(1, { error: "Informe a descrição do produto." }),
+  basePrice: requiredMoney,
+  categoryId: z.string().uuid({ error: "Selecione uma categoria." }),
   // "A" = ativo, "I" = inativo. Produto novo sempre nasce "A" (a action ignora
   // este campo na criação).
   status: z.enum(["A", "I"]).default("A"),
   // Checkbox: "on" quando marcado, ausente (null) quando não.
   isTest: z.coerce.boolean().default(false),
+  isCustomized: z.coerce.boolean().default(false),
 });
 
 export const variantSchema = z.object({
@@ -42,10 +73,24 @@ export const variantSchema = z.object({
   attributeValue1: optionalText,
   attributeKey2: optionalText,
   attributeValue2: optionalText,
-  priceOverride: optionalText.transform((value) => value || undefined),
-  stockQuantity: z.coerce.number().int().min(0),
+  priceOverride: optionalMoney,
+  stockQuantity: requiredStock,
   active: z.coerce.boolean(),
   imageId: optionalId,
+});
+export const newProductVariantSchema = variantSchema.extend({
+  attributeKey1: z.enum(
+    ["cor", "material", "tamanho", "modelo", "estampa", "personalizacao", "acabamento", "formato", "nenhum"],
+    { error: "Selecione um atributo ou escolha sem atributo." },
+  ),
+}).superRefine((variant, ctx) => {
+  if (variant.attributeKey1 !== "nenhum" && !variant.attributeValue1) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["attributeValue1"],
+      message: "Informe a especificação da variação.",
+    });
+  }
 });
 
 export const categorySchema = z.object({

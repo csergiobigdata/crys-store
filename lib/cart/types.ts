@@ -7,8 +7,10 @@ export type CartLine = {
 };
 
 export type CartLineDetails = CartLine & {
+  productId: string;
   productName: string;
   productSlug: string;
+  isCustomized: boolean;
   variantAttributes: Record<string, string>;
   unitPrice: number;
   imageUrl: string | null;

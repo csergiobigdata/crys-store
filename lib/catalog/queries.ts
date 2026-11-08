@@ -52,7 +52,8 @@ export async function listCatalogProducts(
     .select(
       "id, name, slug, base_price, created_at, category:categories(name), images:product_images(url, alt_text, position), variants:product_variants(stock_quantity, active)",
     )
-    .eq("active", true);
+    .eq("active", true)
+    .eq("is_test", false);
 
   if (categoryId) query = query.eq("category_id", categoryId);
   if (filters.search) {
@@ -116,6 +117,7 @@ type ProductDetailRow = {
   description: string | null;
   base_price: number;
   category: { name: string; slug: string } | null;
+  is_customized: boolean;
   images: { id: string; url: string; alt_text: string; position: number }[];
   variants: {
     id: string;
@@ -133,10 +135,11 @@ export async function getProductBySlug(slug: string) {
   const { data } = await supabase
     .from("products")
     .select(
-      "id, name, slug, description, base_price, category:categories(name, slug), images:product_images(id, url, alt_text, position), variants:product_variants(id, attributes, price_override, stock_quantity, active, image_id)",
+      "id, name, slug, description, base_price, is_customized, category:categories(name, slug), images:product_images(id, url, alt_text, position), variants:product_variants(id, attributes, price_override, stock_quantity, active, image_id)",
     )
     .eq("slug", slug)
     .eq("active", true)
+    .eq("is_test", false)
     .maybeSingle();
 
   if (!data) return null;

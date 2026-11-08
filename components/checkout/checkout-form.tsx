@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useActionState } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { LocalDeliveryNotice } from "@/components/checkout/local-delivery-notice";
@@ -130,6 +130,18 @@ export function CheckoutForm({
   const cepLoading = cepDigits.length === 8 && !currentQuote;
 
   const subtotal = details.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const customizedNotices = useMemo(() => {
+    const quantities = new Map<string, { name: string; quantity: number }>();
+    for (const item of details) {
+      if (!item.isCustomized) continue;
+      const current = quantities.get(item.productId);
+      quantities.set(item.productId, {
+        name: item.productName,
+        quantity: (current?.quantity ?? 0) + item.quantity,
+      });
+    }
+    return Array.from(quantities.values());
+  }, [details]);
   // O desconto só vale enquanto o campo ainda tem o código que foi aplicado.
   const couponDiscount =
     appliedCoupon && appliedCoupon.code === couponInput.trim().toUpperCase()
@@ -489,6 +501,17 @@ export function CheckoutForm({
               <p className="mt-0.5 text-plum-soft">Prazo: {selectedOption.deadline}</p>
             </div>
           )}
+          {customizedNotices.map((item) => (
+            <p
+              key={item.name}
+              className="rounded-lg bg-sky-light/70 px-3 py-2 text-xs text-sky-dark"
+            >
+              <span className="font-medium">{item.name}:</span>{" "}
+              {item.quantity >= 2
+                ? "combine com a loja a data de preparação e entrega."
+                : "a preparação pode levar até 5 dias."}
+            </p>
+          ))}
           <div className="flex justify-between border-t border-rose-light pt-2 font-semibold text-plum">
             <span>Total</span>
             <span>{total !== null ? formatCurrency(total) : "—"}</span>

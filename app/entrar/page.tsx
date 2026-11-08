@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
+import { getLastLoginEmail } from "@/lib/auth/last-login";
 
 export const metadata: Metadata = { title: "Entrar" };
 
@@ -10,6 +11,7 @@ export default async function LoginPage({
   searchParams: Promise<{ redirect?: string; confirmado?: string; senha?: string; expirou?: string }>;
 }) {
   const { redirect, confirmado, senha, expirou } = await searchParams;
+  const lastEmail = await getLastLoginEmail();
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
@@ -49,7 +51,7 @@ export default async function LoginPage({
       )}
 
       <div className="mt-8">
-        <LoginForm redirectTo={redirect} />
+        <LoginForm redirectTo={redirect} lastEmail={lastEmail} />
       </div>
 
       <p className="mt-8 text-center text-sm text-plum-soft">

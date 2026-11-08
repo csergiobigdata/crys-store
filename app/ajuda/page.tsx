@@ -157,12 +157,13 @@ const adminTopics: Topic[] = [
       <ol className="list-decimal space-y-1 pl-5">
         <li>
           Em <Link href="/admin/produtos/novo">Produtos → Novo produto</Link>, preencha nome, slug,
-          descrição, preço base e categoria, e salve (todo produto novo nasce Ativo).
+          descrição, preço base e categoria; adicione uma foto e ao menos um SKU com estoque antes
+          de salvar. Nome e slug não podem se repetir, e o sistema sugere slug e SKU.
         </li>
-        <li>Na tela do produto, adicione as fotos e, se houver, as variações com estoque.</li>
+        <li>Na tela do produto, adicione outras fotos e variações, se necessário.</li>
         <li>
-          Marque &ldquo;Produto de teste&rdquo; apenas enquanto estiver avaliando o produto ou
-          testando o app.
+          &ldquo;Produto de teste&rdquo; fica oculto para clientes. &ldquo;Produto customizado&rdquo;
+          informa prazo de até 5 dias para uma unidade; a partir de 2, a data é combinada com a loja.
         </li>
       </ol>
     ),
@@ -194,7 +195,7 @@ const adminTopics: Topic[] = [
         Em <Link href="/admin/cupons">Cupons</Link>: nome (até 10 caracteres), código (até 15), valor
         fixo ou percentual (teto de 30% do valor dos produtos) e limite de uso. Em{" "}
         <Link href="/admin/categorias">Categorias</Link> você cria, renomeia, ativa/desativa e
-        exclui.
+        exclui; o limite é de 10 e a remoção é bloqueada se houver produtos vinculados à categoria.
       </p>
     ),
   },

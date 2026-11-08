@@ -67,7 +67,7 @@ export default async function EditProductPage({
           opções reais, crie uma única variação sem atributos.
         </p>
         <div className="mt-4">
-          <VariantManager productId={product.id} variants={variants} images={images} />
+          <VariantManager productId={product.id} variants={variants} />
         </div>
       </section>
     </div>

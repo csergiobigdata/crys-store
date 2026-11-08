@@ -500,8 +500,10 @@ Hoje são **25**. As de `0016` em diante:
 | `0023` | `coupons.name` (≤ 10); percentual ≤ 30%; **teto de 30%** do valor dos produtos em `checkout_create_order` |
 | `0024` | **Uso único por cliente** do cupom (conta, CPF ou e-mail) em `checkout_create_order` |
 | `0025` | `profiles.is_primary_admin` (único), gatilho de **máx. 3 administradores**, `set_primary_admin`, tabela `contact_messages` |
+| `0026` | `products.is_customized`, nome sem duplicidade e RLS para ocultar produtos de teste, fotos e variações aos clientes |
 
 ### 7.2 Dados novos
+- **`products`**: `is_customized`; `name` é único sem distinção entre maiúsculas/minúsculas.
 - **`profiles`**: `nickname`, `phone` (contato público do administrador principal), `is_primary_admin`.
 - **`coupons`**: `name`. Regras: nome ≤ 10, código ≤ 15, percentual ≤ 30%, desconto ≤ 30% dos produtos (sem frete).
 - **`contact_messages`**: nome, e-mail, telefone, mensagem, `emailed_to`, `email_error`, `read_at`. RLS: só o admin lê/atualiza/exclui; só a service role grava.
@@ -510,8 +512,8 @@ Hoje são **25**. As de `0016` em diante:
 
 ### 7.3 Frete e entrega local (`lib/orders/`)
 - `shipping.ts`: opções de envio por zona (Atibaia, região, estados). Em Atibaia: **entrega local a combinar**
-  (taxa por faixa de distância) e **motoboy** (valor fixo). Com **produto de teste** no carrinho, a entrega local
-  vale para qualquer destino a R$ 0,00.
+  (taxa por faixa de distância) e **motoboy** (valor fixo). Produtos de teste são ocultos aos clientes e
+  bloqueados no checkout.
 - `local-delivery.ts` (puro): `haversineKm`, `localFeeForDistance`; teto de taxa **R$ 50,00**, até 5 faixas.
 - `geocode.ts`: coordenadas por **AwesomeAPI** (CEP) e, se faltar, **OpenStreetMap/Nominatim** (rua). A BrasilAPI
   **não** é usada para distância (devolve o centro da cidade para qualquer CEP). Distância desconhecida =
@@ -543,6 +545,12 @@ Hoje são **25**. As de `0016` em diante:
   `localStorage`, valendo para todas as abas.
 - Visão geral do painel: o card "Pedidos ativos" conta pedidos com status diferente de `cancelado`.
 - Depois do login abre a página inicial (ou o destino original, só se for caminho do próprio site).
+- **E-mail lembrado**: após login com sucesso, `rememberLastLoginEmail` (`lib/auth/last-login.ts`) grava o
+  cookie `chrys-last-login` (httpOnly, `sameSite=lax`, 1 ano). `app/entrar/page.tsx` lê com `getLastLoginEmail`
+  (ignora valor que não pareça e-mail) e `LoginForm` preenche o campo e foca a senha. "Usar outro e-mail"
+  chama `forgetLoginEmail`. A senha nunca é guardada. O botão de olho é `components/ui/password-input.tsx`.
+- `/minha-conta/pedidos` (Meus pedidos): separa "Pedidos em andamento" e "Compras anteriores" (entregue,
+  cancelado, expirado, recusado, estornado) e lista os produtos de cada pedido.
 - `/minha-conta`: nome, apelido, telefone, dados de entrega. O nome no menu segue a regra: apelido; senão
   "Administrador" (admin) ou primeiro nome (cliente; nome de uma palavra = 10 primeiras letras).
 
@@ -556,7 +564,21 @@ fluxo (pagamento, frete, painel), atualizar também os textos dessa página.
 `delete` de toda a tabela `audit_log` pela service role e novo registro `clear_audit_log` com a contagem apagada.
 UI em `components/admin/clear-audit-log.tsx`, no rodapé de `/admin/auditoria`.
 
+### 7.6.3 Vendas e pausa de vendas
+- **`/admin/vendas`** (`app/admin/vendas/page.tsx`): pedidos com pagamento confirmado (`pago`, `em_separacao`,
+  `enviado`, `entregue`), filtros por período e forma de pagamento, total vendido e quem/quando confirmou.
+  Sem resultados mostra mensagem própria (com ou sem filtro). Em Pedidos, os confirmados ganham a etiqueta
+  "Pagamento confirmado" e filtro próprio.
+- **Pausa de vendas**: chave `sales_paused` em `app_settings` (`lib/site/sales-status.ts`), ligada em
+  Configurações > Pausa de vendas e registrada na auditoria. Pausadas, o site avisa, o carrinho e o checkout
+  ficam bloqueados e `createOrder` (`lib/orders/actions.ts`) recusa o pedido; pedidos já criados ainda podem ser pagos.
+
 ### 7.7 Pix, comprovante e e-mails
+- **E-mail a cada compra** (Pix ou cartão): `notifyAdminNewOrder` (`lib/email/notify-admin.ts`) envia ao
+  `ADMIN_NOTIFICATION_EMAIL` cliente, produtos, valores, frete, desconto, pagamento, endereço e link do pedido.
+- **Confirmação manual do Pix** (`confirmPixPaymentManuallyAction`, `lib/admin/pix-actions.ts`;
+  `components/admin/orders/confirm-payment-form.tsx`): vale para "aguardando pagamento" ou "em análise",
+  aceita comprovante anexado pelo admin e observação (opcionais), avisa o cliente e grava na auditoria.
 - Comprovante: seletor com arrastar/clicar e pré-visualização (`proof-file-picker.tsx`). O e-mail ao administrador
   leva o arquivo **anexado e reduzido** (`lib/pix/compress-proof.ts`, sharp: ≤ 1600 px, menor entre WebP/JPEG/PNG;
   PDF intacto); o original fica no Storage (`payment-proofs`).

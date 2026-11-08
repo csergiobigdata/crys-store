@@ -6,6 +6,9 @@
 
 ## 1.3.0 (versão atual) — alterações mais recentes
 
+- Produtos (admin): criação exige dados, foto e SKU; nome, slug e SKU são únicos, e slug/SKU recebem sugestões. Produto de teste fica oculto para clientes. Produto customizado avisa prazo de até 5 dias para uma unidade ou combinação com a loja a partir de 2 unidades.
+- Login: depois de um acesso com sucesso (cliente ou administrador), o e-mail fica guardado neste navegador (cookie `chrys-last-login`, 1 ano) e já vem preenchido na próxima entrada, com o cursor na senha. **A senha nunca é guardada.** O link "Usar outro e-mail" apaga o e-mail lembrado.
+- Vendas (admin): sem resultados, a tela mostra mensagem própria — "Ainda não existem pedidos com vendas confirmadas" (sem filtro) ou "Nenhuma venda confirmada encontrada para esse filtro".
 - Nova seção **Vendas** no painel (`/admin/vendas`): lista só os pedidos com pagamento confirmado (pago, em separação, enviado, entregue), com filtro por período e forma de pagamento, total vendido e quem/quando confirmou. Em **Pedidos**, os confirmados ganham a etiqueta "Pagamento confirmado" (e filtro próprio), e os Pix pendentes têm o botão "Confirmar pagamento". A antiga seção "Vendas" das Configurações passou a se chamar "Pausa de vendas".
 - E-mail ao administrador a cada compra (Pix ou cartão): dados do cliente (nome, e-mail, telefone,
   CPF), produtos com quantidade e valores, frete, desconto, total, forma de pagamento e endereço de
@@ -109,4 +112,4 @@ a 2ª fase (`CARD_PAYMENTS_ENABLED`).
 - Caixa de **Mensagens** do Fale Conosco.
 
 ### Banco de dados
-Migrações `0001` a `0025` em `supabase/migrations/`.
+Migrações `0001` a `0026` em `supabase/migrations/`.

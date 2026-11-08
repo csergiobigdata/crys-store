@@ -42,8 +42,6 @@ de Uso avisam que o cartão em até 6x "ainda não está liberado" e "em breve".
     R$ 50,00, definida pelo administrador) e **motoboy** (valor fixo do
     administrador); a opção "Entrega local — A combinar com a loja" mostra um
     aviso em destaque (a loja só despacha depois de combinar);
-  - a mesma opção local vale para qualquer destino quando há **produto de teste**
-    no carrinho;
   - **Cupom**: botão **Aplicar** com desconto imediato no resumo; código de até 15
     caracteres; teto de **30%** do valor dos produtos (sem frete); uso **único por
     cliente** (conta, CPF ou e-mail); mensagens claras para cupom inexistente,
@@ -55,6 +53,9 @@ de Uso avisam que o cartão em até 6x "ainda não está liberado" e "em breve".
 - **Conta**: cadastro/login, "Esqueci minha senha", dados de entrega, apelido,
   telefone, histórico de pedidos e exclusão de conta (LGPD). Depois do login abre a
   página inicial. A sessão expira após **15 minutos sem atividade** (volta ao login, com aviso).
+  O login tem botão de olho para ver a senha e **lembra o e-mail** do último acesso neste
+  navegador (cookie de 1 ano; a senha nunca é guardada; "Usar outro e-mail" apaga). "Meus pedidos"
+  separa os **em andamento** das **compras anteriores** e lista os produtos de cada pedido.
 - **Ajuda** (`/ajuda`, link no rodapé em Atendimento): perguntas e respostas para clientes e,
   só para administradores, o passo a passo do painel.
 - **Sobre** (rodapé): logomarca, versão e contato do administrador principal.
@@ -66,16 +67,22 @@ de Uso avisam que o cartão em até 6x "ainda não está liberado" e "em breve".
 - **Visão geral** com contadores (produtos ativos, comprovantes Pix em análise e pedidos
   ativos, sem os cancelados) e o card **"Online agora"** (abas abertas e em qual
   área do site; anônimo, via Supabase Realtime).
-- **Produtos** (status A/I, fotos, variações e estoque, marca "Produto de teste"),
-  **Categorias** (máx. 10), **Cupons** (nome de até 10 caracteres, código, teto 30%).
-- **Pedidos**: confirmar/recusar Pix, marcar como enviado, estornar cartão e
+- **Produtos** (status A/I, fotos, variações e estoque; marca "Produto de teste" e
+  "Produto customizado", com preparação de até 5 dias para uma unidade ou prazo combinado a partir de 2),
+  **Categorias** (máx. 10; criar, renomear, ativar/desativar e excluir quando não houver
+  produtos vinculados), **Cupons** (nome de até 10 caracteres, código, teto 30%).
+- **Vendas** (`/admin/vendas`): só pedidos com pagamento confirmado, com filtro por período e forma
+  de pagamento, total vendido e quem/quando confirmou.
+- **Pedidos**: confirmar/recusar Pix (a confirmação manual aceita comprovante e observação opcionais),
+  marcar como enviado, estornar cartão e
   **cancelar** com justificativa (guarda quem cancelou, data/hora/segundo em
   horário de Brasília e o motivo).
 - **Mensagens** (Fale Conosco), **Relatórios**, **Auditoria** (o administrador principal pode
   apagar todo o log, digitando APAGAR para confirmar).
 - **Administradores**: de 1 a **3**; só o **principal** gerencia a lista, e o e-mail e o
   telefone dele são o contato público da loja.
-- **Configurações**: prazo do Pix, chave Pix, nome do recebedor (até 100 caracteres; no QR Code vai cortado em 25), dados da empresa e **entrega local**
+- **Configurações**: **pausa de vendas** (o site avisa, o cliente navega mas não compra; pedidos já
+  criados ainda podem ser pagos), prazo do Pix, chave Pix, nome do recebedor (até 100 caracteres; no QR Code vai cortado em 25), dados da empresa e **entrega local**
   (CEP/coordenadas da loja, faixas de distância e valor do motoboy).
 - "Esvaziar carrinho" só para administradores, sempre sobre o próprio carrinho.
 
@@ -104,7 +111,7 @@ Preencha `.env.local` conforme [Variáveis de ambiente](#variáveis-de-ambiente)
    (**nunca** exponha a `service_role` ao navegador: ela só é usada em
    `lib/supabase/admin.ts`, protegido por `import "server-only"`).
 3. Aplique as migrações de `supabase/migrations/` **em ordem, uma por vez**, pelo SQL
-   Editor (ou `npx supabase db push`). Hoje são **25 migrações**:
+   Editor (ou `npx supabase db push`). Hoje são **26 migrações**:
 
 | Migração | Conteúdo |
 |---|---|
@@ -120,6 +127,7 @@ Preencha `.env.local` conforme [Variáveis de ambiente](#variáveis-de-ambiente)
 | 0023 | Nome do cupom, teto de 30% de desconto no checkout |
 | 0024 | Cupom de uso único por cliente |
 | 0025 | Administrador principal, limite de 3 administradores e mensagens do Fale Conosco |
+| 0026 | Produtos customizados, nomes únicos e ocultação de produtos de teste para clientes |
 
 4. **Dados de exemplo** (`supabase/seed.sql`): só para desenvolvimento. **Não rode em
    produção.**
@@ -154,7 +162,7 @@ escondida; só as `NEXT_PUBLIC_*` podem ser Config):
 | `PIX_KEY`, `PIX_MERCHANT_NAME`, `PIX_MERCHANT_CITY` | Pix estático (padrão; o admin pode trocar em Configurações) | Secret |
 | `PIX_EXPIRATION_HOURS` | Prazo do Pix (padrão 24) | — |
 | `RESEND_API_KEY` | Envio de e-mails | Secret |
-| `ADMIN_NOTIFICATION_EMAIL` | E-mail dos avisos de pedido (**o da administradora**) | Secret |
+| `ADMIN_NOTIFICATION_EMAIL` | E-mail dos avisos de pedido, inclusive o resumo de **cada compra** (**o da administradora**) | Secret |
 | `EMAIL_FROM` | Remetente. Vazio = `onboarding@resend.dev` (só entrega ao dono da conta Resend) | — |
 | `CRON_SECRET` | Autoriza a rota do agendamento. **Só caracteres ASCII** (use o gerador abaixo) | Secret |
 | `CARD_PAYMENTS_ENABLED` | `true` liga o cartão (2ª fase). Vazio = só Pix | — |

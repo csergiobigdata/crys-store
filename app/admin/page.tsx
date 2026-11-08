@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { OnlineNow } from "@/components/admin/online-now";
+import { ButtonLink } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Painel administrativo" };
@@ -18,7 +19,11 @@ async function getCounts() {
   const supabase = await createClient();
 
   const [products, pendingPix, orders] = await Promise.all([
-    supabase.from("products").select("id", { count: "exact", head: true }).eq("active", true),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true)
+      .eq("is_test", false),
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -109,9 +114,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-semibold text-plum">
-        Painel administrativo
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-display text-3xl font-semibold text-plum">
+          Painel administrativo
+        </h1>
+        <ButtonLink href="/admin/produtos/novo">Novo produto</ButtonLink>
+      </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         {cards.map((card) => (

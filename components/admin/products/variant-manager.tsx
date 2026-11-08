@@ -1,6 +1,5 @@
 import { VariantRowForm } from "@/components/admin/products/variant-row-form";
 
-type ProductImage = { id: string; url: string; alt_text: string };
 type Variant = {
   id: string;
   sku: string;
@@ -8,17 +7,14 @@ type Variant = {
   price_override: number | null;
   stock_quantity: number;
   active: boolean;
-  image_id: string | null;
 };
 
 export function VariantManager({
   productId,
   variants,
-  images,
 }: {
   productId: string;
   variants: Variant[];
-  images: ProductImage[];
 }) {
   return (
     <div className="space-y-3">
@@ -27,13 +23,12 @@ export function VariantManager({
           key={variant.id}
           productId={productId}
           variant={variant}
-          images={images}
         />
       ))}
 
       <div>
         <p className="mb-2 text-sm font-medium text-plum">Nova variação</p>
-        <VariantRowForm productId={productId} variant={null} images={images} />
+        <VariantRowForm productId={productId} variant={null} />
       </div>
     </div>
   );

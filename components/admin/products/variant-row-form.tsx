@@ -3,8 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteVariantAction, upsertVariantAction } from "@/lib/admin/product-actions";
-
-type ProductImage = { id: string; url: string; alt_text: string };
+import { VariantAttributeFields } from "@/components/admin/products/variant-attribute-fields";
 
 type Variant = {
   id: string;
@@ -13,17 +12,14 @@ type Variant = {
   price_override: number | null;
   stock_quantity: number;
   active: boolean;
-  image_id: string | null;
 };
 
 export function VariantRowForm({
   productId,
   variant,
-  images,
 }: {
   productId: string;
   variant: Variant | null;
-  images: ProductImage[];
 }) {
   const action = upsertVariantAction.bind(null, productId, variant?.id ?? null);
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -44,61 +40,51 @@ export function VariantRowForm({
           className="mt-1 w-full rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
         />
       </div>
+      <VariantAttributeFields
+        index={1}
+        idPrefix={variant?.id ?? productId}
+        defaultKey={attributeEntries[0]?.[0] ?? ""}
+        defaultValue={attributeEntries[0]?.[1] ?? ""}
+        className="sm:col-span-2"
+      />
       <div className="sm:col-span-2">
-        <label className="block text-xs text-plum-soft">Atributo 1</label>
-        <input
-          name="attributeKey1"
-          placeholder="cor"
-          defaultValue={attributeEntries[0]?.[0] ?? ""}
-          className="mt-1 w-full rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
-        />
-      </div>
-      <div className="sm:col-span-2">
-        <label className="block text-xs text-plum-soft">Valor 1</label>
-        <input
-          name="attributeValue1"
-          placeholder="Dourado"
-          defaultValue={attributeEntries[0]?.[1] ?? ""}
-          className="mt-1 w-full rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
-        />
-      </div>
-      <div className="sm:col-span-1">
         <label className="block text-xs text-plum-soft">Preço (opc.)</label>
         <input
           name="priceOverride"
-          type="number"
-          step="0.01"
-          min="0"
-          defaultValue={variant?.price_override ?? ""}
-          className="mt-1 w-full rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
+          type="text"
+          inputMode="decimal"
+          placeholder="0,00"
+          defaultValue={variant?.price_override?.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) ?? ""}
+          className="mt-1 w-full min-w-32 rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
         />
       </div>
-      <div className="sm:col-span-1">
+      <div className="sm:col-span-2">
         <label className="block text-xs text-plum-soft">Estoque</label>
         <input
           name="stockQuantity"
           type="number"
           min="0"
           required
-          defaultValue={variant?.stock_quantity ?? 0}
-          className="mt-1 w-full rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
+          defaultValue={variant?.stock_quantity ?? 1}
+          className="mt-1 w-full min-w-32 rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
         />
       </div>
-      <div className="sm:col-span-2">
-        <label className="block text-xs text-plum-soft">Foto</label>
-        <select
-          name="imageId"
-          defaultValue={variant?.image_id ?? ""}
-          className="mt-1 w-full rounded-lg border border-rose/30 px-2 py-1.5 text-sm"
-        >
-          <option value="">Sem foto específica</option>
-          {images.map((image) => (
-            <option key={image.id} value={image.id}>
-              {image.alt_text}
-            </option>
-          ))}
-        </select>
-      </div>
+      <details className="sm:col-span-full" open={Boolean(attributeEntries[1])}>
+        <summary className="cursor-pointer text-xs text-plum-soft">
+          Atributo adicional (opcional)
+        </summary>
+        <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <VariantAttributeFields
+            index={2}
+            idPrefix={variant?.id ?? productId}
+            defaultKey={attributeEntries[1]?.[0] ?? ""}
+            defaultValue={attributeEntries[1]?.[1] ?? ""}
+          />
+        </div>
+      </details>
       <div className="flex items-center gap-1 sm:col-span-1">
         <input
           type="checkbox"

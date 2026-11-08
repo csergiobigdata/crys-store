@@ -67,6 +67,15 @@ export function CartView({ isAdmin = false }: { isAdmin?: boolean }) {
   }
 
   const subtotal = details.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  const customizedQuantityByProduct = new Map<string, number>();
+  for (const item of details) {
+    if (item.isCustomized) {
+      customizedQuantityByProduct.set(
+        item.productId,
+        (customizedQuantityByProduct.get(item.productId) ?? 0) + item.quantity,
+      );
+    }
+  }
 
   async function emptyCart() {
     if (!window.confirm("Esvaziar o carrinho? Todos os produtos serão removidos.")) return;
@@ -124,6 +133,13 @@ export function CartView({ isAdmin = false }: { isAdmin?: boolean }) {
                   )}
                   {!item.active && (
                     <p className="text-sm text-error">Este item não está mais disponível.</p>
+                  )}
+                  {item.isCustomized && (
+                    <p className="mt-1 text-xs text-sky-dark">
+                      {(customizedQuantityByProduct.get(item.productId) ?? item.quantity) >= 2
+                        ? "Para 2 ou mais unidades deste produto customizado, combine a data de preparação e entrega com a loja."
+                        : "Produto customizado: a preparação pode levar até 5 dias."}
+                    </p>
                   )}
                 </div>
                 <button

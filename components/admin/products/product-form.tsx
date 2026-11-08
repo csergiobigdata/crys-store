@@ -23,6 +23,7 @@ export function ProductForm({
     status: "A" | "I";
     inactivated_at: string | null;
     is_test: boolean;
+    is_customized: boolean;
   };
 }) {
   const action = upsertProductAction.bind(null, productId);
@@ -56,6 +57,7 @@ export function ProductForm({
         <label className="block text-sm font-medium text-plum">Descrição</label>
         <textarea
           name="description"
+          required
           rows={4}
           defaultValue={initial?.description ?? ""}
           className="mt-1.5 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
@@ -69,11 +71,14 @@ export function ProductForm({
           </label>
           <input
             name="basePrice"
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
+            placeholder="0,00"
             required
-            defaultValue={initial?.base_price}
+            defaultValue={initial?.base_price.toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
             className="mt-1.5 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
           />
         </div>
@@ -81,10 +86,11 @@ export function ProductForm({
           <label className="block text-sm font-medium text-plum">Categoria</label>
           <select
             name="categoryId"
+            required
             defaultValue={initial?.category_id ?? ""}
             className="mt-1.5 w-full rounded-lg border border-rose/30 px-3 py-2 text-sm"
           >
-            <option value="">Sem categoria</option>
+            <option value="">Selecione uma categoria</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -104,9 +110,23 @@ export function ProductForm({
         <span>
           <span className="font-medium text-plum">Produto de teste</span>
           <span className="mt-0.5 block text-xs text-plum-soft">
-            Marque enquanto estiver avaliando se o produto fica no catálogo ou testando o
-            aplicativo. No checkout, a compra de um produto de teste libera a opção de
-            entrega local a combinar com a loja, para qualquer endereço.
+            Produtos de teste ficam ocultos no catálogo e não podem ser comprados por clientes.
+          </span>
+        </span>
+      </label>
+
+      <label className="flex items-start gap-3 rounded-lg border border-rose/30 bg-surface px-3 py-3 text-sm">
+        <input
+          type="checkbox"
+          name="isCustomized"
+          defaultChecked={initial?.is_customized ?? false}
+          className="mt-0.5 h-4 w-4"
+        />
+        <span>
+          <span className="font-medium text-plum">Produto customizado</span>
+          <span className="mt-0.5 block text-xs text-plum-soft">
+            Uma unidade tem prazo de preparação de até 5 dias; para 2 ou mais, a data deve ser
+            combinada com a loja.
           </span>
         </span>
       </label>
